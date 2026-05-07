@@ -1,7 +1,7 @@
 // ⚠️ Remplacez CLIENT_ID par votre Client ID Google Cloud Console
 // URL de production : https://fabrice-oss.github.io/avrila-formation
 export const CONFIG = {
-  CLIENT_ID: 'VOTRE_CLIENT_ID_ICI.apps.googleusercontent.com',
+  CLIENT_ID: '764252678223-p9b5s3c4q5f100sqv7gkiee3ffs8mefn.apps.googleusercontent.com',
   SCOPES: [
     'https://www.googleapis.com/auth/drive.file',
     'https://www.googleapis.com/auth/calendar',
