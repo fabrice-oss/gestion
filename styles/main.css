@@ -1256,11 +1256,79 @@ body[data-theme="light"] .btn-signout:hover { background: rgba(220,53,69,0.08); 
 .text-muted { color: var(--text-muted) !important; }
 
 .urssaf-declare-form {
-  padding: 14px;
+  padding: 16px;
   background: var(--glass-bg);
   border-radius: var(--radius-sm);
   border: 1px solid var(--glass-border);
+  margin-top: 4px;
 }
+
+.urssaf-declare-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.urssaf-auto-badge {
+  font-size: 0.68rem;
+  color: #5dca8a;
+  font-weight: 500;
+  margin-left: 6px;
+}
+
+.urssaf-cotis-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 160px;
+}
+.urssaf-cotis-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+.urssaf-cotis-value {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--orange);
+  line-height: 1;
+}
+
+.urssaf-declare-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.urssaf-factures-detail {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--glass-border);
+}
+.urssaf-factures-title {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.urssaf-facture-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 5px 0;
+  font-size: 0.82rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.urssaf-facture-line:last-child { border-bottom: none; }
+
 .urssaf-ca-input { max-width: 200px; }
 
 .urssaf-total {

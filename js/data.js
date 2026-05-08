@@ -8,7 +8,7 @@ export const store = {
     facturation: { ...CONFIG.FACTURATION },
     calendar_id: CONFIG.CALENDAR_ID,
     urssaf_frequence: 'mensuelle',
-    urssaf_taux: 22,
+    urssaf_taux: 25.6,
   },
   organismes: [],
   entreprises: [],
