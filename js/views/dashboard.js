@@ -143,9 +143,10 @@ export function render() {
           ${next5.length === 0 ? '<p class="empty-state">Aucune session à venir</p>' : `
           <div class="sessions-list">
             ${next5.map(s => {
-              const org = getOrganisme(s.mission.organisme_id);
+              const org = s.mission.organisme_id ? getOrganisme(s.mission.organisme_id) : null;
               const entreprises = getMissionEntreprises(s.mission);
               const entLabel = entreprises.map(e => e.nom).join(', ');
+              const parts = [entLabel, org?.nom].filter(Boolean);
               return `
                 <div class="session-item">
                   <div class="session-date-badge">
@@ -154,7 +155,7 @@ export function render() {
                   </div>
                   <div class="session-info">
                     <div class="session-title">${s.mission.intitule || 'Formation'}</div>
-                    <div class="session-sub">${entLabel || ''}${entLabel && org?.nom ? ' · ' : ''}${org?.nom || ''} · ${s.heures}h</div>
+                    <div class="session-sub">${parts.join(' · ')} · ${s.heures}h</div>
                   </div>
                 </div>`;
             }).join('')}

@@ -65,7 +65,7 @@ function renderMissionsList(filter) {
 
   return `<div class="missions-grid">
     ${sorted.map(m => {
-      const org = getOrganisme(m.organisme_id);
+      const org = m.organisme_id ? getOrganisme(m.organisme_id) : null;
       const entreprises = getMissionEntreprises(m);
       const facture = getMissionFacture(m.id);
       const sessions = m.sessions || [];
@@ -91,7 +91,7 @@ function renderMissionsList(filter) {
           </div>
           <h3 class="mission-title">${escHtml(m.intitule || 'Mission sans titre')}</h3>
           <div class="mission-meta">
-            <div class="meta-item"><span>🏢</span> ${escHtml(org?.nom || '—')}</div>
+            ${org ? `<div class="meta-item"><span>🏢</span> ${escHtml(org.nom)}</div>` : ''}
             ${entreprises.length > 0
               ? `<div class="meta-item"><span>🏭</span> ${entreprises.map(e => escHtml(e.nom)).join(', ')}</div>`
               : ''}
@@ -136,13 +136,24 @@ function attachMissionEvents() {
     btn.addEventListener('click', e => { e.stopPropagation(); navigate('factures', { action: 'new', missionId: btn.dataset.id }); }));
 }
 
+function isAnimation(type) {
+  return type === 'animation';
+}
+
 function isFormationType(type) {
   return type === 'animation' || type === 'conception';
 }
 
 function missionFormHTML(m = {}) {
   const sessions = m.sessions || [{ date: isoToday(), heures: 7 }];
-  const selectedEntreprises = m.entreprises_ids || (m.entreprise_id ? [m.entreprise_id] : []);
+  const type = m.type || 'animation';
+  const animation = isAnimation(type);
+
+  // Entreprises sélectionnées (multi pour animation, single pour les autres)
+  const selectedEntreprises = m.entreprises_ids?.length
+    ? m.entreprises_ids
+    : (m.entreprise_id ? [m.entreprise_id] : []);
+  const singleEntrepriseId = selectedEntreprises[0] || '';
 
   return `
     <form id="form-mission" class="form-grid">
@@ -153,26 +164,34 @@ function missionFormHTML(m = {}) {
       <div class="form-group form-group-half">
         <label>Type de prestation</label>
         <select name="type" id="select-type">
-          ${MISSION_TYPES.map(t => `<option value="${t.value}" ${(m.type || 'animation') === t.value ? 'selected' : ''}>${t.label}</option>`).join('')}
+          ${MISSION_TYPES.map(t => `<option value="${t.value}" ${type === t.value ? 'selected' : ''}>${t.label}</option>`).join('')}
         </select>
       </div>
       <div class="form-group form-group-half">
         <label>Statut</label>
-        <select name="statut" id="select-statut">
+        <select name="statut">
           <option value="en_cours" ${(m.statut || 'en_cours') === 'en_cours' ? 'selected' : ''}>En cours</option>
           <option value="terminee" ${m.statut === 'terminee' ? 'selected' : ''}>Terminée</option>
           <option value="annulee" ${m.statut === 'annulee' ? 'selected' : ''}>Annulée</option>
         </select>
       </div>
-      <div class="form-group">
-        <label>Organisme de formation *</label>
-        <select name="organisme_id" required>
-          <option value="">— Sélectionner —</option>
+
+      <!-- Organisme : uniquement pour animation (optionnel) -->
+      <div class="form-group" id="field-organisme" ${!animation ? 'style="display:none"' : ''}>
+        <label>Organisme de formation
+          <span style="color:var(--text-muted);font-weight:400"> — optionnel (laisser vide si mission directe)</span>
+        </label>
+        <select name="organisme_id" id="select-organisme">
+          <option value="">— Aucun (mission directe entreprise) —</option>
           ${store.organismes.map(o => `<option value="${o.id}" ${m.organisme_id === o.id ? 'selected' : ''}>${escHtml(o.nom)}</option>`).join('')}
         </select>
       </div>
-      <div class="form-group">
-        <label>Entreprises formées <span style="color:var(--text-muted);font-weight:400">(sélection multiple possible)</span></label>
+
+      <!-- Entreprises formées : multi-sélection pour animation -->
+      <div class="form-group" id="field-entreprises-multi" ${!animation ? 'style="display:none"' : ''}>
+        <label>Entreprises formées
+          <span style="color:var(--text-muted);font-weight:400"> — sélection multiple (inter / intra)</span>
+        </label>
         <div class="entreprises-checkboxes">
           ${store.entreprises.length === 0
             ? '<span style="color:var(--text-muted);font-size:0.85rem">Aucune entreprise enregistrée</span>'
@@ -183,6 +202,16 @@ function missionFormHTML(m = {}) {
               </label>`).join('')}
         </div>
       </div>
+
+      <!-- Entreprise cliente : sélection unique pour les autres types -->
+      <div class="form-group" id="field-entreprise-single" ${animation ? 'style="display:none"' : ''}>
+        <label>Entreprise cliente</label>
+        <select name="entreprise_single_id">
+          <option value="">— Sélectionner —</option>
+          ${store.entreprises.map(e => `<option value="${e.id}" ${singleEntrepriseId === e.id ? 'selected' : ''}>${escHtml(e.nom)}</option>`).join('')}
+        </select>
+      </div>
+
       <div class="form-group form-group-half">
         <label>Nombre de participants</label>
         <input type="number" name="participants" value="${m.participants || ''}" min="0">
@@ -195,14 +224,15 @@ function missionFormHTML(m = {}) {
         <label>Frais de déplacement HT (€)</label>
         <input type="number" name="frais_deplacement" value="${m.frais_deplacement || 0}" min="0" step="0.01">
       </div>
-      <div class="form-group formation-only" id="specialite-group" ${!isFormationType(m.type || 'animation') ? 'style="display:none"' : ''}>
+
+      <div class="form-group" id="specialite-group" ${!isFormationType(type) ? 'style="display:none"' : ''}>
         <label>Spécialité de formation (BPF)</label>
         <select name="specialite">
           <option value="">— Sélectionner —</option>
           ${SPECIALITES.map(s => `<option value="${s.code}" ${m.specialite === s.code ? 'selected' : ''}>${s.code} — ${s.label}</option>`).join('')}
         </select>
       </div>
-      <div class="form-group form-group-full formation-only" id="distanciel-group" ${!isFormationType(m.type || 'animation') ? 'style="display:none"' : ''}>
+      <div class="form-group form-group-full" id="distanciel-group" ${!isFormationType(type) ? 'style="display:none"' : ''}>
         <label>
           <input type="checkbox" name="distanciel" value="true" ${m.distanciel ? 'checked' : ''}>
           Formation en tout ou partie à distance (classe virtuelle, e-learning…)
@@ -254,11 +284,16 @@ function openMissionForm(id = null) {
 
   document.getElementById('btn-cancel')?.addEventListener('click', closeModal);
 
-  // Afficher/masquer les champs formation selon le type
+  // Afficher/masquer les champs selon le type de prestation
   document.getElementById('select-type')?.addEventListener('change', e => {
-    const isFormation = isFormationType(e.target.value);
-    document.getElementById('specialite-group').style.display = isFormation ? '' : 'none';
-    document.getElementById('distanciel-group').style.display = isFormation ? '' : 'none';
+    const type = e.target.value;
+    const anim = isAnimation(type);
+    const formation = isFormationType(type);
+    document.getElementById('field-organisme').style.display        = anim ? '' : 'none';
+    document.getElementById('field-entreprises-multi').style.display = anim ? '' : 'none';
+    document.getElementById('field-entreprise-single').style.display = anim ? 'none' : '';
+    document.getElementById('specialite-group').style.display        = formation ? '' : 'none';
+    document.getElementById('distanciel-group').style.display        = formation ? '' : 'none';
   });
 
   document.getElementById('btn-add-session')?.addEventListener('click', () => {
@@ -300,12 +335,21 @@ async function saveMissionForm(form, id) {
   sessions.sort((a, b) => a.date.localeCompare(b.date));
 
   const type = fd.get('type');
+  const anim = isAnimation(type);
+
+  // Pour animation : organisme optionnel + multi-entreprises
+  // Pour les autres : pas d'organisme + une seule entreprise
+  const organisme_id = anim ? (fd.get('organisme_id') || null) : null;
+  const entreprises_ids = anim
+    ? fd.getAll('entreprises_ids')
+    : (fd.get('entreprise_single_id') ? [fd.get('entreprise_single_id')] : []);
+
   const data = {
     intitule: fd.get('intitule'),
     type,
     statut: fd.get('statut'),
-    organisme_id: fd.get('organisme_id'),
-    entreprises_ids: fd.getAll('entreprises_ids'),
+    organisme_id,
+    entreprises_ids,
     participants: parseInt(fd.get('participants')) || 0,
     tarif_journalier: parseFloat(fd.get('tarif_journalier')) || 0,
     frais_deplacement: parseFloat(fd.get('frais_deplacement')) || 0,
