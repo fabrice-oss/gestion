@@ -1331,6 +1331,62 @@ body[data-theme="light"] .btn-signout:hover { background: rgba(220,53,69,0.08); 
 
 .urssaf-ca-input { max-width: 200px; }
 
+/* CA inputs row */
+.urssaf-ca-inputs {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+/* 4-line URSSAF table */
+.urssaf-lines-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin-bottom: 14px;
+}
+.urssaf-lines-table th {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  padding: 6px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--glass-border);
+}
+.urssaf-lines-table th:last-child,
+.urssaf-lines-table td:last-child { text-align: right; }
+.urssaf-lines-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  color: var(--text-primary);
+}
+.urssaf-lines-table tbody tr:hover { background: rgba(255,255,255,0.03); }
+.urssaf-line-muted td { color: var(--text-muted); font-style: italic; }
+.urssaf-lines-table tfoot td {
+  padding: 10px 10px;
+  border-top: 2px solid var(--glass-border);
+  border-bottom: none;
+  font-size: 0.95rem;
+}
+.urssaf-lines-table tfoot td:last-child { color: var(--orange); font-size: 1.05rem; }
+
+/* Category badges on invoice lines */
+.urssaf-cat-badge {
+  font-size: 0.66rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 20px;
+  letter-spacing: 0.04em;
+}
+.urssaf-cat-bnc { background: rgba(93,202,138,0.15); color: #5dca8a; }
+.urssaf-cat-bic { background: rgba(99,179,237,0.15); color: #63b3ed; }
+
+/* declare actions below table */
+.urssaf-declare-actions { margin-top: 14px; }
+
 .urssaf-total {
   padding: 20px;
   display: flex;
