@@ -36,6 +36,7 @@ function renderFacturesList(filter) {
       <span>Total en attente : <strong>${formatCurrency(totalEnAttente)}</strong></span>
     </div>` : ''}
     <div class="glass-card">
+      <div class="table-wrapper">
       <table class="data-table">
         <thead><tr>
           <th>N° Facture</th><th>Date</th><th>Organisme</th><th>Mission</th><th>Montant HT</th><th>Échéance</th><th>Statut</th><th>Actions</th>
@@ -70,6 +71,7 @@ function renderFacturesList(filter) {
           }).join('')}
         </tbody>
       </table>
+      </div>
       <div class="table-legend">
         <span>📄 Générer PDF</span>
         <span>✏️ Modifier</span>

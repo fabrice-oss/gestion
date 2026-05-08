@@ -11,7 +11,7 @@ export function render() {
     <div class="glass-card">
       ${store.entreprises.length === 0
         ? '<p class="empty-state">Aucune entreprise enregistrée.</p>'
-        : `<table class="data-table">
+        : `<div class="table-wrapper"><table class="data-table">
             <thead><tr>
               <th>Nom</th><th>Adresse</th><th>SIRET</th><th>Actions</th>
             </tr></thead>
@@ -27,7 +27,7 @@ export function render() {
                   </td>
                 </tr>`).join('')}
             </tbody>
-          </table>`}
+          </table></div>`}
     </div>`;
 }
 

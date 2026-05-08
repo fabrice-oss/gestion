@@ -43,9 +43,9 @@ function handleCredentialResponse() {
 
 function handleTokenResponse(resp) {
   if (resp.error) {
-    if (resp.error === 'interaction_required' || resp.error === 'consent_required') {
-      // Fallback : popup si le consentement est nécessaire (première fois)
-      tokenClient.requestAccessToken({ prompt: 'consent' });
+    if (resp.error === 'interaction_required' || resp.error === 'consent_required' || resp.error === 'access_denied') {
+      // Fallback : demande explicite si le silent token a échoué (fréquent sur mobile)
+      tokenClient.requestAccessToken({ prompt: 'select_account' });
       return;
     }
     onAuthChange?.(false);
@@ -53,14 +53,14 @@ function handleTokenResponse(resp) {
   }
   accessToken = resp.access_token;
   tokenExpiry = Date.now() + (resp.expires_in - 60) * 1000;
-  sessionStorage.setItem('gtoken', accessToken);
-  sessionStorage.setItem('gtoken_expiry', String(tokenExpiry));
+  localStorage.setItem('gtoken', accessToken);
+  localStorage.setItem('gtoken_expiry', String(tokenExpiry));
   onAuthChange?.(true);
 }
 
 function tryAutoSignIn() {
-  const saved = sessionStorage.getItem('gtoken');
-  const expiry = parseInt(sessionStorage.getItem('gtoken_expiry') || '0');
+  const saved = localStorage.getItem('gtoken');
+  const expiry = parseInt(localStorage.getItem('gtoken_expiry') || '0');
   if (saved && Date.now() < expiry) {
     accessToken = saved;
     tokenExpiry = expiry;
@@ -93,8 +93,8 @@ export function signOut() {
   google.accounts.id.disableAutoSelect();
   accessToken = null;
   tokenExpiry = 0;
-  sessionStorage.removeItem('gtoken');
-  sessionStorage.removeItem('gtoken_expiry');
+  localStorage.removeItem('gtoken');
+  localStorage.removeItem('gtoken_expiry');
   onAuthChange?.(false);
 }
 

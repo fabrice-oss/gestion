@@ -11,7 +11,7 @@ export function render() {
     <div class="glass-card">
       ${store.organismes.length === 0
         ? '<p class="empty-state">Aucun organisme. Ajoutez votre premier partenaire.</p>'
-        : `<table class="data-table">
+        : `<div class="table-wrapper"><table class="data-table">
             <thead><tr>
               <th>Nom</th><th>Correspondant</th><th>Email</th><th>Téléphone</th><th>SIRET</th><th>Actions</th>
             </tr></thead>
@@ -29,7 +29,7 @@ export function render() {
                   </td>
                 </tr>`).join('')}
             </tbody>
-          </table>`}
+          </table></div>`}
     </div>`;
 }
 
