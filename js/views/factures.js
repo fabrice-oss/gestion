@@ -1,4 +1,4 @@
-import { store, saveFactures, saveMissions, getOrganisme, getEntreprise, getMission } from '../data.js';
+import { store, saveFactures, getOrganisme, getMission } from '../data.js';
 import { uuid, toast, escHtml, confirm, formatDate, formatCurrency, nextInvoiceNumber, isoToday, addDays, missionTotalHT } from '../utils.js';
 import { showModal, closeModal, navigate } from '../app.js';
 import { generateInvoicePDF } from '../pdf.js';
@@ -59,9 +59,10 @@ function renderFacturesList(filter) {
                   </span>
                 </td>
                 <td class="actions">
-                  <button class="btn-icon btn-pdf" data-id="${f.id}" title="Générer PDF">📄</button>
+                  <button class="btn-icon btn-pdf" data-id="${f.id}" title="Générer et télécharger le PDF">📄</button>
+                  <button class="btn-icon btn-edit-facture" data-id="${f.id}" title="Modifier la facture">✏️</button>
                   ${f.statut === 'en_attente'
-                    ? `<button class="btn-icon btn-mark-paid" data-id="${f.id}" title="Marquer payée">✅</button>`
+                    ? `<button class="btn-icon btn-mark-paid" data-id="${f.id}" title="Marquer comme payée">✅</button>`
                     : ''}
                   <button class="btn-icon btn-delete-facture" data-id="${f.id}" title="Supprimer">🗑️</button>
                 </td>
@@ -69,6 +70,12 @@ function renderFacturesList(filter) {
           }).join('')}
         </tbody>
       </table>
+      <div class="table-legend">
+        <span>📄 Générer PDF</span>
+        <span>✏️ Modifier</span>
+        <span>✅ Marquer payée</span>
+        <span>🗑️ Supprimer</span>
+      </div>
     </div>`;
 }
 
@@ -90,6 +97,8 @@ export function init(params = {}) {
 function attachFactureEvents() {
   document.querySelectorAll('.btn-pdf').forEach(btn =>
     btn.addEventListener('click', () => downloadPDF(btn.dataset.id)));
+  document.querySelectorAll('.btn-edit-facture').forEach(btn =>
+    btn.addEventListener('click', () => openEditFactureForm(btn.dataset.id)));
   document.querySelectorAll('.btn-mark-paid').forEach(btn =>
     btn.addEventListener('click', () => markPaid(btn.dataset.id)));
   document.querySelectorAll('.btn-delete-facture').forEach(btn =>
@@ -97,11 +106,9 @@ function attachFactureEvents() {
 }
 
 function factureFormHTML(missionId = null) {
-  const missionOptions = store.missions.filter(m => m.statut === 'terminee' || m.id === missionId);
   const numero = nextInvoiceNumber(store.factures, store.settings.facturation?.prefixe || 'AF');
   const today = isoToday();
   const echeance = addDays(today, store.settings.facturation?.delai_paiement_jours || 45);
-
   const preselected = missionId ? store.missions.find(m => m.id === missionId) : null;
   const preTotal = preselected ? missionTotalHT(preselected) : 0;
 
@@ -140,6 +147,43 @@ function factureFormHTML(missionId = null) {
     </form>`;
 }
 
+function editFactureFormHTML(facture) {
+  return `
+    <form id="form-edit-facture" class="form-grid">
+      <div class="form-group form-group-half">
+        <label>Numéro *</label>
+        <input type="text" name="numero" value="${escHtml(facture.numero)}" required>
+      </div>
+      <div class="form-group form-group-half">
+        <label>Date d'émission *</label>
+        <input type="date" name="date_emission" value="${facture.date_emission}" required>
+      </div>
+      <div class="form-group form-group-half">
+        <label>Montant HT (€) *</label>
+        <input type="number" name="montant_ht" value="${facture.montant_ht}" min="0" step="0.01" required>
+      </div>
+      <div class="form-group form-group-half">
+        <label>Date d'échéance *</label>
+        <input type="date" name="date_echeance" value="${facture.date_echeance}" required>
+      </div>
+      <div class="form-group">
+        <label>Statut</label>
+        <select name="statut">
+          <option value="en_attente" ${facture.statut === 'en_attente' ? 'selected' : ''}>En attente</option>
+          <option value="payee" ${facture.statut === 'payee' ? 'selected' : ''}>Payée</option>
+        </select>
+      </div>
+      <div class="form-group" id="date-paiement-group" ${facture.statut !== 'payee' ? 'style="display:none"' : ''}>
+        <label>Date de paiement</label>
+        <input type="date" name="date_paiement" value="${facture.date_paiement || isoToday()}">
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" id="btn-cancel">Annuler</button>
+        <button type="submit" class="btn-primary">Enregistrer les modifications</button>
+      </div>
+    </form>`;
+}
+
 function openFactureForm(id = null, missionId = null) {
   showModal('Nouvelle facture', factureFormHTML(missionId));
 
@@ -147,9 +191,7 @@ function openFactureForm(id = null, missionId = null) {
 
   document.getElementById('select-mission')?.addEventListener('change', e => {
     const m = getMission(e.target.value);
-    if (m) {
-      document.getElementById('input-montant').value = missionTotalHT(m);
-    }
+    if (m) document.getElementById('input-montant').value = missionTotalHT(m);
   });
 
   document.getElementById('form-facture')?.addEventListener('submit', async ev => {
@@ -169,12 +211,43 @@ function openFactureForm(id = null, missionId = null) {
     };
     store.factures.push(facture);
     await saveFactures();
-    toast('Facture créée ✓');
+    toast('Facture créée ✓ — Utilisez le bouton 📄 pour générer le PDF');
     closeModal();
     navigate('factures');
+  });
+}
 
-    // Auto-generate PDF
-    setTimeout(() => downloadPDF(facture.id), 500);
+function openEditFactureForm(id) {
+  const facture = store.factures.find(f => f.id === id);
+  if (!facture) return;
+
+  showModal(`Modifier — ${facture.numero}`, editFactureFormHTML(facture));
+
+  document.getElementById('btn-cancel')?.addEventListener('click', closeModal);
+
+  // Afficher/masquer date de paiement selon le statut
+  document.querySelector('#form-edit-facture [name="statut"]')?.addEventListener('change', e => {
+    document.getElementById('date-paiement-group').style.display = e.target.value === 'payee' ? '' : 'none';
+  });
+
+  document.getElementById('form-edit-facture')?.addEventListener('submit', async ev => {
+    ev.preventDefault();
+    const fd = new FormData(ev.target);
+    const idx = store.factures.findIndex(f => f.id === id);
+    const newStatut = fd.get('statut');
+    store.factures[idx] = {
+      ...store.factures[idx],
+      numero: fd.get('numero'),
+      date_emission: fd.get('date_emission'),
+      date_echeance: fd.get('date_echeance'),
+      montant_ht: parseFloat(fd.get('montant_ht')) || 0,
+      statut: newStatut,
+      date_paiement: newStatut === 'payee' ? (fd.get('date_paiement') || isoToday()) : null,
+    };
+    await saveFactures();
+    toast('Facture modifiée ✓');
+    closeModal();
+    navigate('factures');
   });
 }
 
@@ -184,11 +257,10 @@ async function downloadPDF(id) {
   const mission = getMission(facture.mission_id);
   if (!mission) { toast('Mission introuvable', 'error'); return; }
 
-  toast('Génération du PDF en cours...');
+  toast('Génération du PDF en cours…');
   try {
     const blob = await generateInvoicePDF(facture, mission);
 
-    // Download locally
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -196,7 +268,6 @@ async function downloadPDF(id) {
     a.click();
     URL.revokeObjectURL(url);
 
-    // Upload to Drive
     try {
       const result = await uploadPDF(`${facture.numero}.pdf`, blob);
       const idx = store.factures.findIndex(f => f.id === id);

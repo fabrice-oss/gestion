@@ -143,20 +143,21 @@ function renderBPF(year) {
       <div class="bpf-section glass-card">
         <div class="bpf-section-header">
           <span class="bpf-zone" style="background:#555">📋</span>
-          <h3>Détail des missions ${year}</h3>
+          <h3>Détail des missions d'animation — ${year}</h3>
+          <span class="badge badge-info">Animation uniquement</span>
         </div>
         <table class="bpf-table">
           <thead><tr><th>Mission</th><th>Organisme</th><th>Participants</th><th>Heures formateur</th><th>Heures stagiaires</th><th>CA HT</th></tr></thead>
           <tbody>
             ${stats.missions.length === 0
-              ? '<tr><td colspan="6" class="empty-state">Aucune mission pour cette année</td></tr>'
+              ? '<tr><td colspan="6" class="empty-state">Aucune mission d\'animation pour cet exercice</td></tr>'
               : stats.missions.map(m => {
                   const org = store.organismes.find(o => o.id === m.organisme_id);
                   const facture = store.factures.find(f => f.mission_id === m.id);
                   const hf = m.sessions?.reduce((s, sess) => s + (sess.heures || 0), 0) || 0;
                   return `<tr>
-                    <td>${m.intitule || '—'}</td>
-                    <td>${org?.nom || '—'}</td>
+                    <td>${escHtml(m.intitule || '—')}</td>
+                    <td>${escHtml(org?.nom || '—')}</td>
                     <td>${m.participants || 0}</td>
                     <td>${hf}h</td>
                     <td>${hf * (m.participants || 0)}h</td>
@@ -165,9 +166,16 @@ function renderBPF(year) {
                 }).join('')}
           </tbody>
         </table>
+        <p class="bpf-note">ℹ️ Seules les missions de type "Animation de formation" sont comptabilisées dans le BPF. Les missions "Conception pédagogique" et les prestations web ne sont pas incluses.</p>
       </div>
 
     </div>`;
+}
+
+function escHtml(str) {
+  const d = document.createElement('div');
+  d.textContent = str ?? '';
+  return d.innerHTML;
 }
 
 export function init() {

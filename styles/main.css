@@ -997,6 +997,235 @@ input[type="checkbox"] {
   .dashboard-grid { grid-template-columns: 1fr; }
 }
 
+/* ── Thème clair ────────────────────────────── */
+body[data-theme="light"] {
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-bg-hover: rgba(255, 255, 255, 0.90);
+  --glass-border: rgba(0, 0, 0, 0.10);
+  --glass-border-strong: rgba(0, 0, 0, 0.18);
+  --text-primary: #1a2744;
+  --text-secondary: #4a5568;
+  --text-muted: #9ca3af;
+  --shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  --shadow-sm: 0 2px 12px rgba(0, 0, 0, 0.08);
+  background: #eef2fb;
+  color: #1a2744;
+}
+body[data-theme="light"]::before {
+  background:
+    radial-gradient(ellipse 80% 60% at 20% 10%, rgba(27,58,140,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 80% 80%, rgba(245,166,35,0.07) 0%, transparent 55%),
+    linear-gradient(160deg, #eef2fb 0%, #e5ecf8 40%, #dce6f5 100%);
+}
+body[data-theme="light"] .bg-orb-1 { background: rgba(27,58,140,0.10); }
+body[data-theme="light"] .bg-orb-2 { background: rgba(245,166,35,0.08); }
+body[data-theme="light"] .bg-orb-3 { background: rgba(27,58,140,0.07); }
+
+body[data-theme="light"] .sidebar {
+  background: rgba(255,255,255,0.82);
+  border-right-color: rgba(0,0,0,0.08);
+}
+body[data-theme="light"] .sidebar-brand { color: var(--navy); }
+body[data-theme="light"] .nav-item { color: #4a5568; }
+body[data-theme="light"] .nav-item:hover { background: rgba(27,58,140,0.07); color: var(--navy); }
+body[data-theme="light"] .nav-item.active { background: rgba(27,58,140,0.12); color: var(--navy); border-color: rgba(27,58,140,0.25); }
+body[data-theme="light"] .nav-separator { color: #9ca3af; }
+
+body[data-theme="light"] input[type="text"],
+body[data-theme="light"] input[type="email"],
+body[data-theme="light"] input[type="tel"],
+body[data-theme="light"] input[type="number"],
+body[data-theme="light"] input[type="date"],
+body[data-theme="light"] select,
+body[data-theme="light"] textarea {
+  background: rgba(255,255,255,0.85);
+  border-color: rgba(0,0,0,0.15);
+  color: #1a2744;
+}
+body[data-theme="light"] input:focus,
+body[data-theme="light"] select:focus,
+body[data-theme="light"] textarea:focus {
+  border-color: rgba(27,58,140,0.5);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(27,58,140,0.12);
+}
+body[data-theme="light"] input[type="date"]::-webkit-calendar-picker-indicator { filter: none; opacity: 0.5; }
+body[data-theme="light"] select option { background: #fff; color: #1a2744; }
+
+body[data-theme="light"] .loading-overlay { background: rgba(238,242,251,0.85); }
+body[data-theme="light"] .modal-overlay { background: rgba(200,210,235,0.6); }
+body[data-theme="light"] .toast {
+  background: rgba(255,255,255,0.96);
+  color: #1a2744;
+  border-color: rgba(0,0,0,0.12);
+}
+body[data-theme="light"] .bpf-row-active { background: rgba(27,58,140,0.08); }
+body[data-theme="light"] .bpf-row-active td { color: var(--navy); }
+body[data-theme="light"] .bpf-row-total { background: rgba(27,58,140,0.10); }
+body[data-theme="light"] .bpf-row-total td { color: var(--navy); }
+body[data-theme="light"] .data-table td { border-bottom-color: rgba(0,0,0,0.05); }
+body[data-theme="light"] .data-table tbody tr:hover { background: rgba(27,58,140,0.05); }
+body[data-theme="light"] .session-row { background: rgba(255,255,255,0.6); }
+body[data-theme="light"] .btn-signout:hover { background: rgba(220,53,69,0.08); }
+
+/* ── Bouton thème ───────────────────────────── */
+.btn-theme-toggle {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  color: var(--text-secondary);
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+.btn-theme-toggle:hover { background: var(--glass-bg-hover); color: var(--text-primary); }
+
+/* ── Multi-sélection entreprises ────────────── */
+.entreprises-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-sm);
+  max-height: 180px;
+  overflow-y: auto;
+  min-height: 52px;
+}
+.entreprise-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 50px;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 0.82rem;
+  font-weight: 500;
+  user-select: none;
+  color: var(--text-secondary);
+}
+.entreprise-tag:has(input:checked) {
+  background: rgba(27,58,140,0.35);
+  border-color: rgba(27,58,140,0.7);
+  color: var(--white);
+}
+.entreprise-tag:hover { background: var(--glass-bg-hover); color: var(--text-primary); }
+.entreprise-tag input { display: none; }
+
+/* ── Légende actions tableau ────────────────── */
+.table-legend {
+  display: flex;
+  gap: 20px;
+  padding: 10px 16px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--glass-border);
+  flex-wrap: wrap;
+}
+
+/* ── URSSAF — Rappel dashboard ──────────────── */
+.urssaf-reminder {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  border-left: 3px solid var(--orange);
+}
+.urssaf-urgent { border-left-color: #ff6b7a; background: rgba(231,76,60,0.07) !important; }
+.urssaf-reminder-icon { font-size: 1.6rem; flex-shrink: 0; }
+.urssaf-reminder-content { flex: 1; min-width: 0; }
+.urssaf-reminder-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 6px;
+}
+.urssaf-reminder-details {
+  display: flex;
+  gap: 20px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  flex-wrap: wrap;
+}
+.urssaf-reminder-details strong { color: var(--text-primary); }
+
+/* ── URSSAF — Vue déclarations ──────────────── */
+.urssaf-settings-card { padding: 20px; margin-bottom: 16px; }
+
+.urssaf-periods { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+
+.urssaf-period-card {
+  padding: 18px 20px;
+  transition: var(--transition);
+}
+.urssaf-done { opacity: 0.75; }
+.urssaf-overdue { border-left: 3px solid #ff6b7a; background: rgba(231,76,60,0.06) !important; }
+
+.urssaf-period-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.urssaf-period-label {
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-right: 10px;
+  text-transform: capitalize;
+}
+.urssaf-period-deadline { font-size: 0.78rem; color: var(--text-muted); }
+
+.urssaf-period-amounts {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.urssaf-amount-block { display: flex; flex-direction: column; gap: 3px; }
+.urssaf-amount-label { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+.urssaf-amount-value { font-size: 1.05rem; font-weight: 700; }
+.text-orange { color: var(--orange); }
+.text-muted { color: var(--text-muted) !important; }
+
+.urssaf-declare-form {
+  padding: 14px;
+  background: var(--glass-bg);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--glass-border);
+}
+.urssaf-ca-input { max-width: 200px; }
+
+.urssaf-total {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.urssaf-total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--glass-border);
+  font-size: 0.9rem;
+}
+.urssaf-total-row:last-child { border-bottom: none; }
+.urssaf-total-row strong { font-size: 1rem; }
+
 @media (max-width: 640px) {
   .stats-grid { grid-template-columns: 1fr 1fr; }
   .missions-grid { grid-template-columns: 1fr; }

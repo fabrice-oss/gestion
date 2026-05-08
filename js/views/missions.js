@@ -1,7 +1,15 @@
-import { store, saveMissions, getOrganisme, getEntreprise, getMissionFacture } from '../data.js';
+import { store, saveMissions, getOrganisme, getMissionEntreprises, getMissionFacture } from '../data.js';
 import { uuid, toast, escHtml, confirm, formatDate, formatCurrency, missionTotalHT, missionHeuresFormateur, isoToday } from '../utils.js';
 import { showModal, closeModal, navigate } from '../app.js';
-import { createEvent, deleteEvent } from '../api/calendar.js';
+import { createEvent } from '../api/calendar.js';
+
+const MISSION_TYPES = [
+  { value: 'animation',         label: 'Animation de formation' },
+  { value: 'conception',        label: 'Conception pédagogique' },
+  { value: 'creation_site_web', label: 'Création de site web' },
+  { value: 'application_web',   label: 'Application web' },
+  { value: 'gestion_site_web',  label: 'Gestion de site web' },
+];
 
 const SPECIALITES = [
   { code: '200', label: 'Formations générales' },
@@ -22,7 +30,6 @@ const SPECIALITES = [
 ];
 
 export function render() {
-  const statusFilter = 'tous';
   return `
     <div class="view-header">
       <h2>Missions</h2>
@@ -37,6 +44,10 @@ export function render() {
     <div id="missions-list">
       ${renderMissionsList('tous')}
     </div>`;
+}
+
+function typeLabel(type) {
+  return MISSION_TYPES.find(t => t.value === type)?.label || type || 'Formation';
 }
 
 function renderMissionsList(filter) {
@@ -55,7 +66,7 @@ function renderMissionsList(filter) {
   return `<div class="missions-grid">
     ${sorted.map(m => {
       const org = getOrganisme(m.organisme_id);
-      const ent = getEntreprise(m.entreprise_id);
+      const entreprises = getMissionEntreprises(m);
       const facture = getMissionFacture(m.id);
       const sessions = m.sessions || [];
       const firstDate = sessions[0]?.date;
@@ -68,19 +79,22 @@ function renderMissionsList(filter) {
       return `
         <div class="mission-card glass-card" data-id="${m.id}">
           <div class="mission-card-header">
-            <div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
               <span class="badge badge-${statutClass}">${statutLabel}</span>
-              ${m.distanciel ? '<span class="badge badge-info" style="margin-left:6px">Distanciel</span>' : ''}
+              <span class="badge badge-info">${escHtml(typeLabel(m.type))}</span>
+              ${m.distanciel ? '<span class="badge badge-info">Distanciel</span>' : ''}
             </div>
             <div class="mission-actions">
               <button class="btn-icon btn-edit-mission" data-id="${m.id}" title="Modifier">✏️</button>
               <button class="btn-icon btn-delete-mission" data-id="${m.id}" title="Supprimer">🗑️</button>
             </div>
           </div>
-          <h3 class="mission-title">${escHtml(m.intitule || 'Formation sans titre')}</h3>
+          <h3 class="mission-title">${escHtml(m.intitule || 'Mission sans titre')}</h3>
           <div class="mission-meta">
             <div class="meta-item"><span>🏢</span> ${escHtml(org?.nom || '—')}</div>
-            <div class="meta-item"><span>🏭</span> ${escHtml(ent?.nom || '—')}</div>
+            ${entreprises.length > 0
+              ? `<div class="meta-item"><span>🏭</span> ${entreprises.map(e => escHtml(e.nom)).join(', ')}</div>`
+              : ''}
             <div class="meta-item"><span>👥</span> ${m.participants || 0} participant(s)</div>
             <div class="meta-item"><span>⏱</span> ${heures}h · ${sessions.length} jour(s)</div>
             ${firstDate ? `<div class="meta-item"><span>📅</span> ${formatDate(firstDate)}${lastDate !== firstDate ? ` → ${formatDate(lastDate)}` : ''}</div>` : ''}
@@ -122,24 +136,29 @@ function attachMissionEvents() {
     btn.addEventListener('click', e => { e.stopPropagation(); navigate('factures', { action: 'new', missionId: btn.dataset.id }); }));
 }
 
+function isFormationType(type) {
+  return type === 'animation' || type === 'conception';
+}
+
 function missionFormHTML(m = {}) {
   const sessions = m.sessions || [{ date: isoToday(), heures: 7 }];
+  const selectedEntreprises = m.entreprises_ids || (m.entreprise_id ? [m.entreprise_id] : []);
+
   return `
     <form id="form-mission" class="form-grid">
       <div class="form-group">
-        <label>Intitulé de la formation *</label>
+        <label>Intitulé *</label>
         <input type="text" name="intitule" value="${escHtml(m.intitule || '')}" required placeholder="Ex: Formation SST">
       </div>
       <div class="form-group form-group-half">
-        <label>Type</label>
-        <select name="type">
-          <option value="animation" ${m.type !== 'conception' ? 'selected' : ''}>Animation</option>
-          <option value="conception" ${m.type === 'conception' ? 'selected' : ''}>Conception pédagogique</option>
+        <label>Type de prestation</label>
+        <select name="type" id="select-type">
+          ${MISSION_TYPES.map(t => `<option value="${t.value}" ${(m.type || 'animation') === t.value ? 'selected' : ''}>${t.label}</option>`).join('')}
         </select>
       </div>
       <div class="form-group form-group-half">
         <label>Statut</label>
-        <select name="statut">
+        <select name="statut" id="select-statut">
           <option value="en_cours" ${(m.statut || 'en_cours') === 'en_cours' ? 'selected' : ''}>En cours</option>
           <option value="terminee" ${m.statut === 'terminee' ? 'selected' : ''}>Terminée</option>
           <option value="annulee" ${m.statut === 'annulee' ? 'selected' : ''}>Annulée</option>
@@ -153,11 +172,16 @@ function missionFormHTML(m = {}) {
         </select>
       </div>
       <div class="form-group">
-        <label>Entreprise formée</label>
-        <select name="entreprise_id">
-          <option value="">— Sélectionner —</option>
-          ${store.entreprises.map(e => `<option value="${e.id}" ${m.entreprise_id === e.id ? 'selected' : ''}>${escHtml(e.nom)}</option>`).join('')}
-        </select>
+        <label>Entreprises formées <span style="color:var(--text-muted);font-weight:400">(sélection multiple possible)</span></label>
+        <div class="entreprises-checkboxes">
+          ${store.entreprises.length === 0
+            ? '<span style="color:var(--text-muted);font-size:0.85rem">Aucune entreprise enregistrée</span>'
+            : store.entreprises.map(e => `
+              <label class="entreprise-tag">
+                <input type="checkbox" name="entreprises_ids" value="${e.id}" ${selectedEntreprises.includes(e.id) ? 'checked' : ''}>
+                <span>${escHtml(e.nom)}</span>
+              </label>`).join('')}
+        </div>
       </div>
       <div class="form-group form-group-half">
         <label>Nombre de participants</label>
@@ -171,21 +195,21 @@ function missionFormHTML(m = {}) {
         <label>Frais de déplacement HT (€)</label>
         <input type="number" name="frais_deplacement" value="${m.frais_deplacement || 0}" min="0" step="0.01">
       </div>
-      <div class="form-group">
-        <label>Spécialité de formation</label>
+      <div class="form-group formation-only" id="specialite-group" ${!isFormationType(m.type || 'animation') ? 'style="display:none"' : ''}>
+        <label>Spécialité de formation (BPF)</label>
         <select name="specialite">
           <option value="">— Sélectionner —</option>
           ${SPECIALITES.map(s => `<option value="${s.code}" ${m.specialite === s.code ? 'selected' : ''}>${s.code} — ${s.label}</option>`).join('')}
         </select>
       </div>
-      <div class="form-group form-group-full">
+      <div class="form-group form-group-full formation-only" id="distanciel-group" ${!isFormationType(m.type || 'animation') ? 'style="display:none"' : ''}>
         <label>
           <input type="checkbox" name="distanciel" value="true" ${m.distanciel ? 'checked' : ''}>
-          Formation en tout ou partie à distance (classe virtuelle, e-learning...)
+          Formation en tout ou partie à distance (classe virtuelle, e-learning…)
         </label>
       </div>
 
-      <div class="form-section-title">Sessions de formation</div>
+      <div class="form-section-title">Sessions / Jours d'intervention</div>
       <div id="sessions-container" class="form-group-full">
         ${sessions.map((s, i) => sessionRow(s, i)).join('')}
       </div>
@@ -230,6 +254,13 @@ function openMissionForm(id = null) {
 
   document.getElementById('btn-cancel')?.addEventListener('click', closeModal);
 
+  // Afficher/masquer les champs formation selon le type
+  document.getElementById('select-type')?.addEventListener('change', e => {
+    const isFormation = isFormationType(e.target.value);
+    document.getElementById('specialite-group').style.display = isFormation ? '' : 'none';
+    document.getElementById('distanciel-group').style.display = isFormation ? '' : 'none';
+  });
+
   document.getElementById('btn-add-session')?.addEventListener('click', () => {
     const container = document.getElementById('sessions-container');
     const div = document.createElement('div');
@@ -258,6 +289,7 @@ function attachRemoveSession() {
 
 async function saveMissionForm(form, id) {
   const fd = new FormData(form);
+  const previousStatut = id ? store.missions.find(x => x.id === id)?.statut : null;
 
   const sessions = [];
   let i = 0;
@@ -267,26 +299,30 @@ async function saveMissionForm(form, id) {
   }
   sessions.sort((a, b) => a.date.localeCompare(b.date));
 
+  const type = fd.get('type');
   const data = {
     intitule: fd.get('intitule'),
-    type: fd.get('type'),
+    type,
     statut: fd.get('statut'),
     organisme_id: fd.get('organisme_id'),
-    entreprise_id: fd.get('entreprise_id') || null,
+    entreprises_ids: fd.getAll('entreprises_ids'),
     participants: parseInt(fd.get('participants')) || 0,
     tarif_journalier: parseFloat(fd.get('tarif_journalier')) || 0,
     frais_deplacement: parseFloat(fd.get('frais_deplacement')) || 0,
-    specialite: fd.get('specialite') || '',
-    distanciel: fd.get('distanciel') === 'true',
+    specialite: isFormationType(type) ? (fd.get('specialite') || '') : '',
+    distanciel: isFormationType(type) ? fd.get('distanciel') === 'true' : false,
     notes: fd.get('notes') || '',
     sessions,
   };
 
+  let savedMissionId;
   if (id) {
     const idx = store.missions.findIndex(x => x.id === id);
     store.missions[idx] = { ...store.missions[idx], ...data };
+    savedMissionId = id;
   } else {
-    store.missions.push({ id: uuid(), created_at: new Date().toISOString(), ...data });
+    savedMissionId = uuid();
+    store.missions.push({ id: savedMissionId, created_at: new Date().toISOString(), ...data });
   }
 
   await saveMissions();
@@ -294,13 +330,15 @@ async function saveMissionForm(form, id) {
   // Sync Google Calendar
   try {
     const calendarId = store.settings.calendar_id;
-    if (calendarId) {
-      const mission = store.missions.find(x => x.id === (id || store.missions[store.missions.length - 1].id));
+    if (calendarId && calendarId !== 'primary') {
+      const mission = store.missions.find(x => x.id === savedMissionId);
       const org = getOrganisme(mission.organisme_id);
-      const ent = getEntreprise(mission.entreprise_id);
+      const entreprises = getMissionEntreprises(mission);
+      const entLabel = entreprises.map(e => e.nom).join(', ') || 'Entreprise inconnue';
+      const fakeEnt = { nom: entLabel };
       for (const session of sessions) {
         if (!session.calendar_event_id) {
-          const ev = await createEvent(calendarId, session, mission, org, ent);
+          const ev = await createEvent(calendarId, session, mission, org, fakeEnt);
           session.calendar_event_id = ev.id;
         }
       }
@@ -309,6 +347,22 @@ async function saveMissionForm(form, id) {
   } catch (e) {
     console.warn('Calendar sync failed:', e);
     toast('Mission enregistrée (Google Calendar non synchronisé)', 'warning');
+  }
+
+  // Proposer de créer une facture si la mission vient d'être marquée terminée
+  if (data.statut === 'terminee' && previousStatut !== 'terminee') {
+    const existingFacture = store.factures.find(f => f.mission_id === savedMissionId);
+    if (!existingFacture) {
+      closeModal();
+      const createInvoice = await confirm('Mission terminée. Souhaitez-vous créer la facture maintenant ?');
+      if (createInvoice) {
+        navigate('factures', { action: 'new', missionId: savedMissionId });
+        return;
+      }
+      navigate('missions');
+      toast('Mission enregistrée ✓');
+      return;
+    }
   }
 
   toast('Mission enregistrée ✓');

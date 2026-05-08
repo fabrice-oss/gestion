@@ -1,6 +1,44 @@
-import { store, getOrganisme, getEntreprise } from '../data.js';
+import { store, getOrganisme, getMissionEntreprises } from '../data.js';
 import { formatCurrency, formatDate } from '../utils.js';
 import { navigate } from '../app.js';
+
+function lastDayOfMonth(year, month) {
+  return new Date(year, month + 1, 0).toISOString().split('T')[0];
+}
+
+function getUrssafPeriod() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth(); // 0-based
+  const freq = store.settings.urssaf_frequence || 'mensuelle';
+
+  if (freq === 'mensuelle') {
+    const refMonth = month === 0 ? 11 : month - 1;
+    const refYear = month === 0 ? year - 1 : year;
+    const start = `${refYear}-${String(refMonth + 1).padStart(2, '0')}-01`;
+    const end = lastDayOfMonth(refYear, refMonth);
+    const deadline = lastDayOfMonth(year, month);
+    const label = new Date(refYear, refMonth).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+    return { label, start, end, deadline };
+  } else {
+    const quarter = Math.floor(month / 3);
+    const refQuarter = quarter === 0 ? 3 : quarter - 1;
+    const refYear = quarter === 0 ? year - 1 : year;
+    const qStart = refQuarter * 3;
+    const start = `${refYear}-${String(qStart + 1).padStart(2, '0')}-01`;
+    const end = lastDayOfMonth(refYear, qStart + 2);
+    const deadlineMonth = (qStart + 3) % 12;
+    const deadlineYear = refQuarter === 3 ? year : refYear;
+    const deadline = lastDayOfMonth(deadlineYear, deadlineMonth);
+    const label = `T${refQuarter + 1} ${refYear}`;
+    return { label, start, end, deadline };
+  }
+}
+
+function daysUntil(isoDate) {
+  const diff = new Date(isoDate) - new Date(new Date().toISOString().split('T')[0]);
+  return Math.ceil(diff / (1000 * 60 * 60 * 24));
+}
 
 export function render() {
   const now = new Date();
@@ -26,6 +64,16 @@ export function render() {
   const recentFactures = [...store.factures]
     .sort((a, b) => b.date_emission.localeCompare(a.date_emission))
     .slice(0, 5);
+
+  // URSSAF reminder
+  const urssafPeriod = getUrssafPeriod();
+  const caToDeclarerPeriod = store.factures
+    .filter(f => f.statut === 'payee' && f.date_paiement >= urssafPeriod.start && f.date_paiement <= urssafPeriod.end)
+    .reduce((s, f) => s + (f.montant_ht || 0), 0);
+  const joursRestants = daysUntil(urssafPeriod.deadline);
+  const isUrgent = joursRestants <= 7;
+  const taux = store.settings.urssaf_taux || 22;
+  const cotisations = caToDeclarerPeriod * taux / 100;
 
   return `
     <div class="dashboard">
@@ -69,6 +117,23 @@ export function render() {
         </div>
       </div>
 
+      <!-- URSSAF Reminder -->
+      <div class="urssaf-reminder glass-card ${isUrgent ? 'urssaf-urgent' : ''}">
+        <div class="urssaf-reminder-icon">📋</div>
+        <div class="urssaf-reminder-content">
+          <div class="urssaf-reminder-title">
+            Déclaration URSSAF — ${urssafPeriod.label}
+            ${isUrgent ? `<span class="badge badge-danger">⚠️ ${joursRestants} jour(s) restant(s)</span>` : `<span class="badge badge-info">${joursRestants} jours</span>`}
+          </div>
+          <div class="urssaf-reminder-details">
+            <span>CA à déclarer : <strong>${formatCurrency(caToDeclarerPeriod)}</strong></span>
+            <span>Cotisations estimées (${taux}%) : <strong>${formatCurrency(cotisations)}</strong></span>
+            <span>Échéance : <strong>${new Date(urssafPeriod.deadline).toLocaleDateString('fr-FR', {day:'numeric',month:'long'})}</strong></span>
+          </div>
+        </div>
+        <button class="btn-secondary btn-sm" id="btn-goto-urssaf">Gérer →</button>
+      </div>
+
       <div class="dashboard-grid">
         <div class="glass-card dashboard-panel">
           <div class="panel-header">
@@ -79,7 +144,8 @@ export function render() {
           <div class="sessions-list">
             ${next5.map(s => {
               const org = getOrganisme(s.mission.organisme_id);
-              const ent = getEntreprise(s.mission.entreprise_id);
+              const entreprises = getMissionEntreprises(s.mission);
+              const entLabel = entreprises.map(e => e.nom).join(', ');
               return `
                 <div class="session-item">
                   <div class="session-date-badge">
@@ -88,7 +154,7 @@ export function render() {
                   </div>
                   <div class="session-info">
                     <div class="session-title">${s.mission.intitule || 'Formation'}</div>
-                    <div class="session-sub">${ent?.nom || ''} · ${org?.nom || ''} · ${s.heures}h</div>
+                    <div class="session-sub">${entLabel || ''}${entLabel && org?.nom ? ' · ' : ''}${org?.nom || ''} · ${s.heures}h</div>
                   </div>
                 </div>`;
             }).join('')}
@@ -128,4 +194,5 @@ export function init() {
   document.querySelectorAll('[data-nav]').forEach(btn => {
     btn.addEventListener('click', () => navigate(btn.dataset.nav));
   });
+  document.getElementById('btn-goto-urssaf')?.addEventListener('click', () => navigate('urssaf'));
 }
