@@ -1039,6 +1039,44 @@ input[type="checkbox"] {
 .settings-section { padding: 24px; }
 .settings-section h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 20px; }
 
+/* ── Logo upload ─────────────────────────────── */
+.logo-upload-area {
+  display: flex;
+  align-items: flex-start;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+.logo-preview-wrap {
+  flex-shrink: 0;
+}
+.logo-preview-img {
+  width: 120px;
+  height: 120px;
+  object-fit: contain;
+  border-radius: 12px;
+  border: 1px solid var(--glass-border);
+  background: rgba(255,255,255,0.06);
+  padding: 8px;
+}
+.logo-preview-empty {
+  width: 120px;
+  height: 120px;
+  border-radius: 12px;
+  border: 2px dashed var(--glass-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  text-align: center;
+}
+.logo-upload-controls {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-top: 4px;
+}
+
 /* ── Summary bar ────────────────────────────── */
 .summary-bar {
   padding: 12px 20px;

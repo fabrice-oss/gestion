@@ -12,6 +12,32 @@ export function render() {
       <div class="settings-sections">
 
         <div class="glass-card settings-section">
+          <h3>🖼️ Logo de votre organisme</h3>
+          <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:16px">
+            Ce logo apparaîtra sur toutes vos factures PDF. Format recommandé : PNG ou JPG, fond transparent ou blanc, carré ou rectangulaire.
+          </p>
+          <div class="logo-upload-area">
+            <div class="logo-preview-wrap">
+              ${s.logo_base64
+                ? `<img src="${s.logo_base64}" id="logo-preview" class="logo-preview-img" alt="Logo">`
+                : `<div id="logo-preview" class="logo-preview-empty"><span>Aucun logo</span></div>`
+              }
+            </div>
+            <div class="logo-upload-controls">
+              <label for="logo-file-input" class="btn-secondary" style="cursor:pointer;display:inline-block">
+                📁 Choisir un fichier
+              </label>
+              <input type="file" id="logo-file-input" accept="image/png,image/jpeg,image/webp,image/svg+xml" style="display:none">
+              ${s.logo_base64
+                ? `<button type="button" class="btn-secondary btn-sm" id="btn-remove-logo" style="margin-left:10px">🗑 Supprimer le logo</button>`
+                : ''
+              }
+              <p style="font-size:0.75rem;color:var(--text-muted);margin-top:8px">Taille max : 2 Mo — PNG, JPG ou WEBP</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card settings-section">
           <h3>🏢 Identité de l'organisme</h3>
           <div class="form-grid">
             <div class="form-group"><label>Nom commercial</label><input type="text" name="nom_commercial" value="${escHtml(s.nom_commercial || '')}"></div>
@@ -74,6 +100,37 @@ export function render() {
 }
 
 export function init() {
+
+  // ── Upload logo ────────────────────────────────────────────────────────────
+  document.getElementById('logo-file-input')?.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { toast('Logo trop volumineux (max 2 Mo)', 'error'); return; }
+
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const base64 = ev.target.result;
+      // Prévisualisation immédiate
+      const wrap = document.querySelector('.logo-preview-wrap');
+      wrap.innerHTML = `<img src="${base64}" id="logo-preview" class="logo-preview-img" alt="Logo">`;
+      // Sauvegarde
+      store.settings.logo_base64 = base64;
+      await saveSettings();
+      toast('Logo enregistré ✓');
+    };
+    reader.readAsDataURL(file);
+  });
+
+  document.getElementById('btn-remove-logo')?.addEventListener('click', async () => {
+    store.settings.logo_base64 = null;
+    await saveSettings();
+    toast('Logo supprimé');
+    // Rafraîchir la section
+    const wrap = document.querySelector('.logo-preview-wrap');
+    wrap.innerHTML = `<div id="logo-preview" class="logo-preview-empty"><span>Aucun logo</span></div>`;
+    document.getElementById('btn-remove-logo').remove();
+  });
+
   document.getElementById('btn-load-calendars')?.addEventListener('click', async () => {
     try {
       const calendars = await listCalendars();

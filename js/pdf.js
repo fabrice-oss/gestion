@@ -1,10 +1,11 @@
 import { store } from './data.js';
 import { formatDate, formatCurrency } from './utils.js';
 
-let logoDataUrl = null;
-
 async function getLogoDataUrl() {
-  if (logoDataUrl) return logoDataUrl;
+  // 1. Logo personnalisé du formateur (stocké en base64 dans ses settings Drive)
+  if (store.settings.logo_base64) return store.settings.logo_base64;
+
+  // 2. Fallback : logo de l'application (assets/logo.png)
   return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
@@ -13,8 +14,7 @@ async function getLogoDataUrl() {
       canvas.width = img.width;
       canvas.height = img.height;
       canvas.getContext('2d').drawImage(img, 0, 0);
-      logoDataUrl = canvas.toDataURL('image/png');
-      resolve(logoDataUrl);
+      resolve(canvas.toDataURL('image/png'));
     };
     img.onerror = () => resolve(null);
     img.src = 'assets/logo.png';
