@@ -82,11 +82,12 @@ export function render() {
       <div class="dashboard-hero">
         <div class="hero-video">
           <iframe
-            src="https://www.youtube.com/embed/L6e7oIqgOiA?rel=0&modestbranding=1"
+            src="https://www.youtube-nocookie.com/embed/L6e7oIqgOiA?rel=0&modestbranding=1&origin=https://avrila.fr"
             title="AVRILA GESTION — Présentation"
             frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen>
+            allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
+            allowfullscreen
+            referrerpolicy="strict-origin-when-cross-origin">
           </iframe>
         </div>
         <div class="hero-promo glass-card">
