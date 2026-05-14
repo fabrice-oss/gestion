@@ -77,6 +77,36 @@ export function render() {
 
   return `
     <div class="dashboard">
+
+      <!-- ── Bloc hero : vidéo + visuel promo ── -->
+      <div class="dashboard-hero">
+        <div class="hero-video">
+          <iframe
+            src="https://www.youtube.com/embed/L6e7oIqgOiA?rel=0&modestbranding=1"
+            title="AVRILA GESTION — Présentation"
+            frameborder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen>
+          </iframe>
+        </div>
+        <div class="hero-promo glass-card">
+          <img src="assets/hero-promo.png" alt="AVRILA GESTION" class="hero-promo-img"
+            onerror="this.closest('.hero-promo').classList.add('hero-promo-fallback');this.style.display='none'">
+          <div class="hero-promo-text" style="display:none">
+            <p class="hero-tagline-top">LA GESTION SIMPLIFIÉE,</p>
+            <p class="hero-tagline-orange">L'IMPACT MAXIMISÉ.</p>
+            <p class="hero-desc">Gérez vos missions, factures et obligations en toute simplicité.<br>Gagnez du temps, développez votre activité<br>et concentrez-vous sur l'essentiel : vos formations.</p>
+            <div class="hero-features">
+              <div class="hero-feature"><span class="hero-feature-icon">📋</span><strong>Missions</strong></div>
+              <div class="hero-feature"><span class="hero-feature-icon">👥</span><strong>Clients</strong></div>
+              <div class="hero-feature"><span class="hero-feature-icon">💶</span><strong>Factures</strong></div>
+              <div class="hero-feature"><span class="hero-feature-icon">📊</span><strong>CA</strong></div>
+              <div class="hero-feature"><span class="hero-feature-icon">🛡️</span><strong>URSSAF & BPF</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div class="stats-grid">
         <div class="stat-card glass-card">
           <div class="stat-icon" style="background: linear-gradient(135deg,#1B3A8C,#2d5fce)">
@@ -192,6 +222,11 @@ export function render() {
 }
 
 export function init() {
+  // Affiche le bloc texte de secours si l'image hero-promo n'est pas chargée
+  const promoEl = document.querySelector('.hero-promo');
+  if (promoEl?.classList.contains('hero-promo-fallback')) {
+    promoEl.querySelector('.hero-promo-text').style.display = 'flex';
+  }
   document.querySelectorAll('[data-nav]').forEach(btn => {
     btn.addEventListener('click', () => navigate(btn.dataset.nav));
   });
