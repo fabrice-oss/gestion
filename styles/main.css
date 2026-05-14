@@ -120,10 +120,11 @@ body::before {
 }
 
 .login-logo {
-  width: 96px;
-  height: 96px;
+  width: 140px;
+  height: 140px;
   object-fit: contain;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 4px 24px rgba(245,166,35,0.25));
 }
 
 .login-brand {
@@ -222,10 +223,11 @@ body::before {
 }
 
 .sidebar-logo {
-  width: 42px;
-  height: 42px;
+  width: 44px;
+  height: 44px;
   object-fit: contain;
   flex-shrink: 0;
+  border-radius: 50%;
 }
 
 .sidebar-brand-text { display: flex; flex-direction: column; line-height: 1.1; }
@@ -1067,6 +1069,20 @@ input[type="checkbox"] {
 }
 .app-footer strong { color: var(--text-secondary); font-weight: 600; }
 .footer-sep { color: var(--glass-border-strong); }
+.footer-creator-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  opacity: 0.75;
+  transition: opacity 0.2s;
+}
+.footer-creator-link:hover { opacity: 1; }
+.footer-creator-logo {
+  height: 28px;
+  width: 28px;
+  object-fit: contain;
+  border-radius: 50%;
+}
 .footer-brand {
   font-weight: 700;
   font-size: 0.72rem;
