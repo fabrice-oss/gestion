@@ -119,12 +119,89 @@ body::before {
   to   { opacity: 1; transform: translateY(0); }
 }
 
+/* ── Orbites login ───────────────────────────── */
+.login-orbit-wrap {
+  position: relative;
+  width: 300px;
+  height: 300px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  flex-shrink: 0;
+}
+
 .login-logo {
   width: 140px;
   height: 140px;
   object-fit: contain;
-  margin-bottom: 16px;
-  filter: drop-shadow(0 4px 24px rgba(245,166,35,0.25));
+  position: relative;
+  z-index: 2;
+  filter: drop-shadow(0 4px 24px rgba(245,166,35,0.30));
+}
+
+/* Anneaux orbitaux */
+.orbit-ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  border-radius: 50%;
+  border: 1px solid transparent;
+}
+
+.orbit-ring-1 {
+  width: 190px; height: 190px;
+  border-color: rgba(245,166,35,0.18);
+  animation: orbit-cw 4.5s linear infinite;
+}
+.orbit-ring-2 {
+  width: 240px; height: 240px;
+  border-color: rgba(99,179,237,0.15);
+  animation: orbit-cw 8s linear infinite;
+  animation-delay: -2s;
+}
+.orbit-ring-3 {
+  width: 294px; height: 294px;
+  border-color: rgba(159,122,234,0.13);
+  animation: orbit-ccw 13s linear infinite;
+  animation-delay: -5s;
+}
+
+@keyframes orbit-cw {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(360deg); }
+}
+@keyframes orbit-ccw {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to   { transform: translate(-50%, -50%) rotate(-360deg); }
+}
+
+/* Planètes */
+.orbit-planet {
+  position: absolute;
+  border-radius: 50%;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Planète 1 : orange / ambrée */
+.orbit-planet-1 {
+  width: 13px; height: 13px;
+  background: radial-gradient(circle at 35% 30%, #ffe08a, #F5A623 60%, #c07000);
+  box-shadow: 0 0 10px 2px rgba(245,166,35,0.7), 0 0 20px 4px rgba(245,166,35,0.3);
+}
+/* Planète 2 : bleue / glacée */
+.orbit-planet-2 {
+  width: 11px; height: 11px;
+  background: radial-gradient(circle at 35% 30%, #bee3f8, #3182ce 60%, #1a4f8c);
+  box-shadow: 0 0 10px 2px rgba(99,179,237,0.7), 0 0 20px 4px rgba(99,179,237,0.3);
+}
+/* Planète 3 : violette */
+.orbit-planet-3 {
+  width: 9px; height: 9px;
+  background: radial-gradient(circle at 35% 30%, #e9d8fd, #805ad5 60%, #44227a);
+  box-shadow: 0 0 8px 2px rgba(159,122,234,0.7), 0 0 18px 4px rgba(159,122,234,0.3);
 }
 
 .login-brand {
