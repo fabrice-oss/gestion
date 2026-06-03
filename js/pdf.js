@@ -53,8 +53,8 @@ export async function generateInvoicePDF(facture, mission) {
   // 1. HEADER fond blanc
   // ══════════════════════════════════════════════════════════════════════════
   const logoContent = logo
-    ? { image: logo, width: 70, margin: [0, 0, 0, 0] }
-    : { text: s.nom_commercial || 'AVRILA FORMATION', fontSize: 14, bold: true, color: navy };
+    ? { image: logo, width: 65, margin: [0, 0, 0, 0] }
+    : { text: s.nom_commercial || 'AVRILA FORMATION', fontSize: 13, bold: true, color: navy };
 
   const headerBand = {
     table: {
@@ -63,12 +63,12 @@ export async function generateInvoicePDF(facture, mission) {
         {
           stack: [logoContent],
           border: [false, false, false, false],
-          margin: [0, 20, 20, 20],
+          margin: [0, 12, 16, 12],
         },
         {
           stack: [
-            { text: 'FACTURE', fontSize: 36, bold: true, color: navy, alignment: 'right', characterSpacing: 3 },
-            { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 195, y2: 0, lineWidth: 2.5, lineColor: orange }], margin: [0, 5, 0, 9], alignment: 'right' },
+            { text: 'FACTURE', fontSize: 30, bold: true, color: navy, alignment: 'right', characterSpacing: 3 },
+            { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 185, y2: 0, lineWidth: 2, lineColor: orange }], margin: [0, 4, 0, 7], alignment: 'right' },
             {
               columns: [
                 { text: 'N° :', fontSize: 8, color: mutedText, width: 50, alignment: 'right' },
@@ -80,18 +80,18 @@ export async function generateInvoicePDF(facture, mission) {
                 { text: 'Emis le :', fontSize: 8, color: mutedText, width: 50, alignment: 'right' },
                 { text: formatDate(facture.date_emission), fontSize: 8, bold: true, color: darkText, width: '*', alignment: 'right' },
               ],
-              margin: [0, 3, 0, 0],
+              margin: [0, 2, 0, 0],
             },
             {
               columns: [
                 { text: 'Echeance :', fontSize: 8, color: mutedText, width: 50, alignment: 'right' },
                 { text: formatDate(facture.date_echeance), fontSize: 8, bold: true, color: orange, width: '*', alignment: 'right' },
               ],
-              margin: [0, 3, 0, 0],
+              margin: [0, 2, 0, 0],
             },
           ],
           border: [false, false, false, false],
-          margin: [0, 20, 0, 20],
+          margin: [0, 12, 0, 12],
           alignment: 'right',
         },
       ]],
@@ -102,38 +102,38 @@ export async function generateInvoicePDF(facture, mission) {
 
   // ── Filet orange sous le header ───────────────────────────────────────────
   const orangeBar = {
-    canvas: [{ type: 'rect', x: 0, y: 0, w: 505, h: 3.5, r: 0, color: orange }],
-    margin: [0, 0, 0, 24],
+    canvas: [{ type: 'rect', x: 0, y: 0, w: 505, h: 3, r: 0, color: orange }],
+    margin: [0, 0, 0, 14],
   };
 
   // ══════════════════════════════════════════════════════════════════════════
   // 2. BLOCS ÉMETTEUR / FACTURÉ À
   // ══════════════════════════════════════════════════════════════════════════
   const emetteurLines = [
-    { text: 'EMETTEUR', fontSize: 7, bold: true, color: orange, characterSpacing: 1.2, margin: [12, 12, 12, 7] },
-    { text: s.nom_commercial || 'AVRILA FORMATION', bold: true, fontSize: 11, color: navy, margin: [12, 0, 12, 3] },
+    { text: 'EMETTEUR', fontSize: 7, bold: true, color: orange, characterSpacing: 1.2, margin: [10, 8, 10, 5] },
+    { text: s.nom_commercial || 'AVRILA FORMATION', bold: true, fontSize: 10.5, color: navy, margin: [10, 0, 10, 2] },
     ...[
-      s.dirigeant          ? { text: s.dirigeant,                                   fontSize: 8.5, color: darkText, margin: [12, 0, 12, 0] } : null,
-      s.adresse            ? { text: s.adresse,                                     fontSize: 8.5, color: darkText, margin: [12, 0, 12, 0] } : null,
-      (s.cp || s.ville)    ? { text: `${s.cp || ''} ${s.ville || ''}`.trim(),       fontSize: 8.5, color: darkText, margin: [12, 0, 12, 5] } : null,
-      s.email              ? { text: s.email,                                        fontSize: 8.5, color: navy,    margin: [12, 0, 12, 0] } : null,
-      s.tel                ? { text: s.tel,                                          fontSize: 8.5, color: darkText, margin: [12, 0, 12, 0] } : null,
-      s.siret              ? { text: `SIRET : ${s.siret}`,                          fontSize: 7.5, color: mutedText, margin: [12, 6, 12, 0] } : null,
-      s.naf                ? { text: `Code NAF : ${s.naf}`,                         fontSize: 7.5, color: mutedText, margin: [12, 0, 12, 0] } : null,
-      s.nda                ? { text: `N° DA : ${s.nda}`,                       fontSize: 7.5, color: mutedText, margin: [12, 0, 12, 14] } : null,
+      s.dirigeant          ? { text: s.dirigeant,                                   fontSize: 8, color: darkText, margin: [10, 0, 10, 0] } : null,
+      s.adresse            ? { text: s.adresse,                                     fontSize: 8, color: darkText, margin: [10, 0, 10, 0] } : null,
+      (s.cp || s.ville)    ? { text: `${s.cp || ''} ${s.ville || ''}`.trim(),       fontSize: 8, color: darkText, margin: [10, 0, 10, 4] } : null,
+      s.email              ? { text: s.email,                                        fontSize: 8, color: navy,    margin: [10, 0, 10, 0] } : null,
+      s.tel                ? { text: s.tel,                                          fontSize: 8, color: darkText, margin: [10, 0, 10, 0] } : null,
+      s.siret              ? { text: `SIRET : ${s.siret}`,                          fontSize: 7, color: mutedText, margin: [10, 4, 10, 0] } : null,
+      s.naf                ? { text: `Code NAF : ${s.naf}`,                         fontSize: 7, color: mutedText, margin: [10, 0, 10, 0] } : null,
+      s.nda                ? { text: `N° DA : ${s.nda}`,                            fontSize: 7, color: mutedText, margin: [10, 0, 10, 8] } : null,
     ].filter(Boolean),
   ].filter(Boolean);
 
   const clientLines = [
-    { text: 'FACTURE A', fontSize: 7, bold: true, color: onNavyMut, characterSpacing: 1.2, margin: [14, 12, 14, 7] },
-    { text: org.nom || '', bold: true, fontSize: 11, color: onNavy, margin: [14, 0, 14, 3] },
+    { text: 'FACTURE A', fontSize: 7, bold: true, color: onNavyMut, characterSpacing: 1.2, margin: [12, 8, 12, 5] },
+    { text: org.nom || '', bold: true, fontSize: 10.5, color: onNavy, margin: [12, 0, 12, 2] },
     ...[
-      org.adresse                  ? { text: org.adresse,                                         fontSize: 8.5, color: onNavySub, margin: [14, 0, 14, 0] } : null,
-      (org.cp || org.ville)        ? { text: `${org.cp || ''} ${org.ville || ''}`.trim(),         fontSize: 8.5, color: onNavySub, margin: [14, 0, 14, 5] } : null,
-      org.correspondant            ? { text: `A l'att. de ${org.correspondant}`,                  fontSize: 8.5, color: onNavySub, margin: [14, 0, 14, 0] } : null,
-      org.email                    ? { text: org.email,                                            fontSize: 8.5, color: onNavySub, margin: [14, 0, 14, 0] } : null,
-      org.siret                    ? { text: `SIRET : ${org.siret}`,                              fontSize: 7.5, color: onNavyMut, margin: [14, 6, 14, 14] } : null,
-      !org.siret                   ? { text: '',                                                   margin: [14, 0, 14, 14] } : null,
+      org.adresse                  ? { text: org.adresse,                                         fontSize: 8, color: onNavySub, margin: [12, 0, 12, 0] } : null,
+      (org.cp || org.ville)        ? { text: `${org.cp || ''} ${org.ville || ''}`.trim(),         fontSize: 8, color: onNavySub, margin: [12, 0, 12, 4] } : null,
+      org.correspondant            ? { text: `A l'att. de ${org.correspondant}`,                  fontSize: 8, color: onNavySub, margin: [12, 0, 12, 0] } : null,
+      org.email                    ? { text: org.email,                                            fontSize: 8, color: onNavySub, margin: [12, 0, 12, 0] } : null,
+      org.siret                    ? { text: `SIRET : ${org.siret}`,                              fontSize: 7, color: onNavyMut, margin: [12, 4, 12, 8] } : null,
+      !org.siret                   ? { text: '',                                                   margin: [12, 0, 12, 8] } : null,
     ].filter(Boolean),
   ].filter(Boolean);
 
@@ -157,7 +157,7 @@ export async function generateInvoicePDF(facture, mission) {
         width: '47%',
       },
     ],
-    margin: [0, 0, 0, 22],
+    margin: [0, 0, 0, 14],
   };
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -166,10 +166,10 @@ export async function generateInvoicePDF(facture, mission) {
   const refLine = facture.reference_formation
     ? [{
         columns: [
-          { text: 'Ref. formation :', fontSize: 8, color: onNavyMut, width: 110 },
-          { text: facture.reference_formation, fontSize: 8, bold: true, color: onNavy },
+          { text: 'Ref. formation :', fontSize: 7.5, color: onNavyMut, width: 105 },
+          { text: facture.reference_formation, fontSize: 7.5, bold: true, color: onNavy },
         ],
-        margin: [0, 3, 0, 0],
+        margin: [0, 2, 0, 0],
       }]
     : [];
 
@@ -180,17 +180,17 @@ export async function generateInvoicePDF(facture, mission) {
         stack: [
           {
             text: `OBJET : ${mission.intitule || 'Formation'}${org.nom ? '  —  ' + org.nom : ''}`,
-            bold: true, fontSize: 9.5, color: onNavy,
+            bold: true, fontSize: 9, color: onNavy,
           },
           ...refLine,
         ],
         fillColor: navyMid,
         border: [false, false, false, false],
-        margin: [14, 11, 14, 11],
+        margin: [12, 8, 12, 8],
       }]],
     },
     layout: 'noBorders',
-    margin: [0, 0, 0, 18],
+    margin: [0, 0, 0, 12],
   };
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -201,14 +201,14 @@ export async function generateInvoicePDF(facture, mission) {
     return [
       {
         stack: [
-          { text: l.description, bold: true, fontSize: 9.5, color: navy },
-          l.subtitle ? { text: l.subtitle, fontSize: 7.5, color: mutedText, margin: [0, 2, 0, 0] } : null,
+          { text: l.description, bold: true, fontSize: 9, color: navy },
+          l.subtitle ? { text: l.subtitle, fontSize: 7, color: mutedText, margin: [0, 2, 0, 0] } : null,
         ].filter(Boolean),
-        fillColor: bg, margin: [8, 10, 8, 10],
+        fillColor: bg, margin: [8, 7, 8, 7],
       },
-      { text: pdfCurrency(l.prix_unitaire), alignment: 'right', fontSize: 9, color: darkText,  fillColor: bg, margin: [4, 10, 8, 10] },
-      { text: `${l.quantite} ${l.unite}`,   alignment: 'center', fontSize: 9, color: darkText, fillColor: bg, margin: [4, 10, 4, 10] },
-      { text: pdfCurrency(l.total),         alignment: 'right', bold: true, fontSize: 9.5, color: navy, fillColor: bg, margin: [4, 10, 8, 10] },
+      { text: pdfCurrency(l.prix_unitaire), alignment: 'right', fontSize: 8.5, color: darkText,  fillColor: bg, margin: [4, 7, 8, 7] },
+      { text: `${l.quantite} ${l.unite}`,   alignment: 'center', fontSize: 8.5, color: darkText, fillColor: bg, margin: [4, 7, 4, 7] },
+      { text: pdfCurrency(l.total),         alignment: 'right', bold: true, fontSize: 9, color: navy, fillColor: bg, margin: [4, 7, 8, 7] },
     ];
   });
 
@@ -217,10 +217,10 @@ export async function generateInvoicePDF(facture, mission) {
       widths: ['*', 100, 80, 90],
       body: [
         [
-          { text: 'DESCRIPTION',   bold: true, fillColor: navy, color: white, fontSize: 8.5, margin: [8, 9, 8, 9] },
-          { text: 'PRIX UNITAIRE', bold: true, fillColor: navy, color: white, fontSize: 8.5, alignment: 'right',  margin: [4, 9, 8, 9] },
-          { text: 'QUANTITE',      bold: true, fillColor: navy, color: white, fontSize: 8.5, alignment: 'center', margin: [4, 9, 4, 9] },
-          { text: 'TOTAL',         bold: true, fillColor: navy, color: white, fontSize: 8.5, alignment: 'right',  margin: [4, 9, 8, 9] },
+          { text: 'DESCRIPTION',   bold: true, fillColor: navy, color: white, fontSize: 8, margin: [8, 7, 8, 7] },
+          { text: 'PRIX UNITAIRE', bold: true, fillColor: navy, color: white, fontSize: 8, alignment: 'right',  margin: [4, 7, 8, 7] },
+          { text: 'QUANTITE',      bold: true, fillColor: navy, color: white, fontSize: 8, alignment: 'center', margin: [4, 7, 4, 7] },
+          { text: 'TOTAL',         bold: true, fillColor: navy, color: white, fontSize: 8, alignment: 'right',  margin: [4, 7, 8, 7] },
         ],
         ...tableRows,
       ],
@@ -237,24 +237,24 @@ export async function generateInvoicePDF(facture, mission) {
   // 5. RÈGLEMENT + TOTAUX
   // ══════════════════════════════════════════════════════════════════════════
   const reglement = [
-    { text: 'REGLEMENT', fontSize: 7, bold: true, color: orange, characterSpacing: 1.2, margin: [0, 0, 0, 9] },
-    { text: s.mode_paiement || 'Par virement bancaire', fontSize: 9, color: darkText },
+    { text: 'REGLEMENT', fontSize: 7, bold: true, color: orange, characterSpacing: 1.2, margin: [0, 0, 0, 7] },
+    { text: s.mode_paiement || 'Par virement bancaire', fontSize: 8.5, color: darkText },
   ];
-  if (s.banque) reglement.push({ text: `Banque : ${s.banque}`,   fontSize: 8.5, color: mutedText, margin: [0, 5, 0, 0] });
-  if (s.iban)   reglement.push({ text: `IBAN : ${s.iban}`,       fontSize: 8.5, color: mutedText });
-  if (s.bic)    reglement.push({ text: `BIC : ${s.bic}`,         fontSize: 8.5, color: mutedText });
-  reglement.push({ text: '', margin: [0, 9, 0, 0] });
+  if (s.banque) reglement.push({ text: `Banque : ${s.banque}`,   fontSize: 8, color: mutedText, margin: [0, 4, 0, 0] });
+  if (s.iban)   reglement.push({ text: `IBAN : ${s.iban}`,       fontSize: 8, color: mutedText });
+  if (s.bic)    reglement.push({ text: `BIC : ${s.bic}`,         fontSize: 8, color: mutedText });
+  reglement.push({ text: '', margin: [0, 7, 0, 0] });
   reglement.push({
     text: s.facturation?.mention_tva || 'TVA non applicable — Art. 293 B du CGI',
-    fontSize: 8, color: mutedText, italics: true,
+    fontSize: 7.5, color: mutedText, italics: true,
   });
   reglement.push({
     text: `Penalites de retard : ${s.facturation?.penalites_taux || 'taux BCE + 10 points'}`,
-    fontSize: 7.5, color: mutedText, margin: [0, 4, 0, 0],
+    fontSize: 7, color: mutedText, margin: [0, 3, 0, 0],
   });
   reglement.push({
     text: `Indemnite forfaitaire de recouvrement : ${s.facturation?.indemnite_recouvrement || 40} EUR`,
-    fontSize: 7.5, color: mutedText,
+    fontSize: 7, color: mutedText,
   });
 
   const totaux = {
@@ -262,16 +262,16 @@ export async function generateInvoicePDF(facture, mission) {
       widths: ['*', 115],
       body: [
         [
-          { text: 'TOTAL HT',       fontSize: 9,  color: mutedText, alignment: 'right', fillColor: lightGrey, border: [false, false, false, true], borderColor: [null, null, null, '#D1D5DB'], margin: [8, 11, 8, 11] },
-          { text: pdfCurrency(totalHT), fontSize: 9, bold: true, color: darkText, alignment: 'right', fillColor: lightGrey, border: [false, false, false, true], borderColor: [null, null, null, '#D1D5DB'], margin: [4, 11, 10, 11] },
+          { text: 'TOTAL HT',       fontSize: 8.5, color: mutedText, alignment: 'right', fillColor: lightGrey, border: [false, false, false, true], borderColor: [null, null, null, '#D1D5DB'], margin: [8, 8, 8, 8] },
+          { text: pdfCurrency(totalHT), fontSize: 8.5, bold: true, color: darkText, alignment: 'right', fillColor: lightGrey, border: [false, false, false, true], borderColor: [null, null, null, '#D1D5DB'], margin: [4, 8, 10, 8] },
         ],
         [
-          { text: 'TVA',            fontSize: 9,  color: mutedText, alignment: 'right', fillColor: lightGrey, border: [false, false, false, true], borderColor: [null, null, null, '#D1D5DB'], margin: [8, 11, 8, 11] },
-          { text: 'Non applicable', fontSize: 8,  color: mutedText, alignment: 'right', italics: true, fillColor: lightGrey, border: [false, false, false, true], borderColor: [null, null, null, '#D1D5DB'], margin: [4, 11, 10, 11] },
+          { text: 'TVA',            fontSize: 8.5, color: mutedText, alignment: 'right', fillColor: lightGrey, border: [false, false, false, true], borderColor: [null, null, null, '#D1D5DB'], margin: [8, 8, 8, 8] },
+          { text: 'Non applicable', fontSize: 7.5, color: mutedText, alignment: 'right', italics: true, fillColor: lightGrey, border: [false, false, false, true], borderColor: [null, null, null, '#D1D5DB'], margin: [4, 8, 10, 8] },
         ],
         [
-          { text: 'NET A PAYER', bold: true, fontSize: 11, color: white, alignment: 'right', fillColor: navy, border: [false, false, false, false], margin: [8, 15, 8, 15] },
-          { text: pdfCurrency(totalHT), bold: true, fontSize: 16, color: orange, alignment: 'right', fillColor: navy, border: [false, false, false, false], margin: [4, 15, 10, 15] },
+          { text: 'NET A PAYER', bold: true, fontSize: 10, color: white, alignment: 'right', fillColor: navy, border: [false, false, false, false], margin: [8, 11, 8, 11] },
+          { text: pdfCurrency(totalHT), bold: true, fontSize: 14, color: orange, alignment: 'right', fillColor: navy, border: [false, false, false, false], margin: [4, 11, 10, 11] },
         ],
       ],
     },
@@ -287,9 +287,8 @@ export async function generateInvoicePDF(facture, mission) {
   // ══════════════════════════════════════════════════════════════════════════
   const docDefinition = {
     pageSize: 'A4',
-    // Marge top = 0 pour que la bande navy arrive au bord de la page
-    pageMargins: [45, 45, 45, 55],
-    defaultStyle: { font: 'Roboto', fontSize: 9.5, color: darkText, lineHeight: 1.35 },
+    pageMargins: [45, 40, 45, 50],
+    defaultStyle: { font: 'Roboto', fontSize: 9, color: darkText, lineHeight: 1.25 },
 
     // Tampon "PAYEE" en filigrane
     ...(isPaid ? {
@@ -330,7 +329,7 @@ export async function generateInvoicePDF(facture, mission) {
       prestationsTable,
 
       // ⑥ Séparateur
-      { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 505, y2: 0, lineWidth: 0.5, lineColor: '#DDE2EE' }], margin: [0, 18, 0, 18] },
+      { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 505, y2: 0, lineWidth: 0.5, lineColor: '#DDE2EE' }], margin: [0, 12, 0, 12] },
 
       // ⑦ Règlement + Totaux
       {
