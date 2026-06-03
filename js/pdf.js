@@ -50,11 +50,11 @@ export async function generateInvoicePDF(facture, mission) {
   const isPaid  = facture.statut === 'payee';
 
   // ══════════════════════════════════════════════════════════════════════════
-  // 1. BANDE HEADER navy pleine largeur
+  // 1. HEADER fond blanc
   // ══════════════════════════════════════════════════════════════════════════
   const logoContent = logo
     ? { image: logo, width: 70, margin: [0, 0, 0, 0] }
-    : { text: s.nom_commercial || 'AVRILA FORMATION', fontSize: 14, bold: true, color: onNavy };
+    : { text: s.nom_commercial || 'AVRILA FORMATION', fontSize: 14, bold: true, color: navy };
 
   const headerBand = {
     table: {
@@ -62,36 +62,34 @@ export async function generateInvoicePDF(facture, mission) {
       body: [[
         {
           stack: [logoContent],
-          fillColor: navy,
           border: [false, false, false, false],
           margin: [0, 20, 20, 20],
         },
         {
           stack: [
-            { text: 'FACTURE', fontSize: 36, bold: true, color: onNavy, alignment: 'right', characterSpacing: 3 },
+            { text: 'FACTURE', fontSize: 36, bold: true, color: navy, alignment: 'right', characterSpacing: 3 },
             { canvas: [{ type: 'line', x1: 0, y1: 0, x2: 195, y2: 0, lineWidth: 2.5, lineColor: orange }], margin: [0, 5, 0, 9], alignment: 'right' },
             {
               columns: [
-                { text: 'N° :', fontSize: 8, color: onNavySub, width: 50, alignment: 'right' },
-                { text: facture.numero, fontSize: 8, bold: true, color: onNavy, width: '*', alignment: 'right' },
+                { text: 'N° :', fontSize: 8, color: mutedText, width: 50, alignment: 'right' },
+                { text: facture.numero, fontSize: 8, bold: true, color: darkText, width: '*', alignment: 'right' },
               ],
             },
             {
               columns: [
-                { text: 'Emis le :', fontSize: 8, color: onNavySub, width: 50, alignment: 'right' },
-                { text: formatDate(facture.date_emission), fontSize: 8, bold: true, color: onNavy, width: '*', alignment: 'right' },
+                { text: 'Emis le :', fontSize: 8, color: mutedText, width: 50, alignment: 'right' },
+                { text: formatDate(facture.date_emission), fontSize: 8, bold: true, color: darkText, width: '*', alignment: 'right' },
               ],
               margin: [0, 3, 0, 0],
             },
             {
               columns: [
-                { text: 'Echeance :', fontSize: 8, color: onNavySub, width: 50, alignment: 'right' },
+                { text: 'Echeance :', fontSize: 8, color: mutedText, width: 50, alignment: 'right' },
                 { text: formatDate(facture.date_echeance), fontSize: 8, bold: true, color: orange, width: '*', alignment: 'right' },
               ],
               margin: [0, 3, 0, 0],
             },
           ],
-          fillColor: navy,
           border: [false, false, false, false],
           margin: [0, 20, 0, 20],
           alignment: 'right',
@@ -290,7 +288,7 @@ export async function generateInvoicePDF(facture, mission) {
   const docDefinition = {
     pageSize: 'A4',
     // Marge top = 0 pour que la bande navy arrive au bord de la page
-    pageMargins: [45, 0, 45, 55],
+    pageMargins: [45, 45, 45, 55],
     defaultStyle: { font: 'Roboto', fontSize: 9.5, color: darkText, lineHeight: 1.35 },
 
     // Tampon "PAYEE" en filigrane
