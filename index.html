@@ -35,13 +35,20 @@
   <div id="login-screen" class="login-screen">
     <div class="login-card glass-card">
       <div class="login-orbit-wrap" aria-hidden="true">
-        <img src="assets/logo.png" alt="NABHOO" class="login-logo">
-        <!-- Orbite 1 : planète orange, rapide, proche -->
-        <div class="orbit-ring orbit-ring-1"><span class="orbit-planet orbit-planet-1"></span></div>
-        <!-- Orbite 2 : planète bleue, vitesse moyenne -->
-        <div class="orbit-ring orbit-ring-2"><span class="orbit-planet orbit-planet-2"></span></div>
-        <!-- Orbite 3 : planète violette, lente, loin -->
-        <div class="orbit-ring orbit-ring-3"><span class="orbit-planet orbit-planet-3"></span></div>
+        <img src="assets/logo-black.png" alt="NABHOO" class="login-logo logo-on-light">
+        <img src="assets/logo-white.png" alt="NABHOO" class="login-logo logo-on-dark">
+        <!-- Anneaux décoratifs (statiques, toujours derrière le logo) -->
+        <div class="orbit-ellipse orbit-ellipse-1"></div>
+        <div class="orbit-ellipse orbit-ellipse-2"></div>
+        <div class="orbit-ellipse orbit-ellipse-3"></div>
+        <!-- Planètes : orbite elliptique, passent devant puis derrière le logo
+             (2 copies par planète : une devant z-index fixe, une derrière) -->
+        <span class="orbit-planet orbit-planet-1 planet-back"></span>
+        <span class="orbit-planet orbit-planet-2 planet-back"></span>
+        <span class="orbit-planet orbit-planet-3 planet-back"></span>
+        <span class="orbit-planet orbit-planet-1 planet-front"></span>
+        <span class="orbit-planet orbit-planet-2 planet-front"></span>
+        <span class="orbit-planet orbit-planet-3 planet-front"></span>
       </div>
       <p class="login-subtitle">Gestion de votre activité de formation professionnelle</p>
       <button id="google-signin-btn" class="btn-google">
@@ -74,13 +81,17 @@
     <aside class="sidebar" id="sidebar" aria-label="Navigation">
       <div class="sidebar-header">
         <div class="sidebar-orbit-wrap">
-          <img src="assets/logo.png" alt="Logo" class="sidebar-logo" onerror="this.style.display='none'">
-          <div class="orbit-ring orbit-ring-sm-1"><span class="orbit-planet orbit-planet-1"></span></div>
-          <div class="orbit-ring orbit-ring-sm-2"><span class="orbit-planet orbit-planet-2"></span></div>
-          <div class="orbit-ring orbit-ring-sm-3"><span class="orbit-planet orbit-planet-3"></span></div>
-        </div>
-        <div class="sidebar-brand-text">
-          <span class="sidebar-brand">NABHOO</span>
+          <img src="assets/logo-black.png" alt="NABHOO" class="sidebar-logo logo-on-light">
+          <img src="assets/logo-white.png" alt="NABHOO" class="sidebar-logo logo-on-dark">
+          <div class="orbit-ellipse orbit-ellipse-sm-1"></div>
+          <div class="orbit-ellipse orbit-ellipse-sm-2"></div>
+          <div class="orbit-ellipse orbit-ellipse-sm-3"></div>
+          <span class="orbit-planet orbit-planet-1 planet-back"></span>
+          <span class="orbit-planet orbit-planet-2 planet-back"></span>
+          <span class="orbit-planet orbit-planet-3 planet-back"></span>
+          <span class="orbit-planet orbit-planet-1 planet-front"></span>
+          <span class="orbit-planet orbit-planet-2 planet-front"></span>
+          <span class="orbit-planet orbit-planet-3 planet-front"></span>
         </div>
       </div>
 
