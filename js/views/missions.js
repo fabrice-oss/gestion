@@ -97,7 +97,7 @@ function renderMissionsList(filter) {
       const statutLabel = isAVenir ? '🗓 À venir' : ({ en_cours: 'En cours', terminee: 'Terminée', annulee: 'Annulée' }[m.statut] || m.statut);
 
       return `
-        <div class="mission-card glass-card" data-id="${m.id}">
+        <div class="mission-card glass-card" data-id="${m.id}" role="button" tabindex="0">
           <div class="mission-card-header">
             <div style="display:flex;gap:6px;flex-wrap:wrap">
               <span class="badge badge-${statutClass}">${statutLabel}</span>
@@ -149,12 +149,110 @@ export function init() {
 }
 
 function attachMissionEvents() {
+  document.querySelectorAll('.mission-card').forEach(card => {
+    card.addEventListener('click', () => openMissionDetail(card.dataset.id));
+    card.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openMissionDetail(card.dataset.id); }
+    });
+  });
+  document.querySelectorAll('.mission-card a.meta-link').forEach(link =>
+    link.addEventListener('click', e => e.stopPropagation()));
   document.querySelectorAll('.btn-edit-mission').forEach(btn =>
     btn.addEventListener('click', e => { e.stopPropagation(); openMissionForm(btn.dataset.id); }));
   document.querySelectorAll('.btn-delete-mission').forEach(btn =>
     btn.addEventListener('click', e => { e.stopPropagation(); deleteMission(btn.dataset.id); }));
   document.querySelectorAll('.btn-facturer').forEach(btn =>
     btn.addEventListener('click', e => { e.stopPropagation(); navigate('factures', { action: 'new', missionId: btn.dataset.id }); }));
+}
+
+// ── Détail mission (popup résumé) ─────────────────────────────────────────
+function missionDetailHTML(m) {
+  const org = m.organisme_id ? getOrganisme(m.organisme_id) : null;
+  const entreprises = getMissionEntreprises(m);
+  const facture = getMissionFacture(m.id);
+  const sessions = m.sessions || [];
+  const total = missionTotalHT(m);
+  const heures = missionHeuresFormateur(m);
+  const today = isoToday();
+  const firstDate = sessions[0]?.date;
+  const isAVenir = m.statut === 'a_venir' || (m.statut === 'en_cours' && (firstDate || '') > today);
+  const statutClass = isAVenir ? 'warning' : ({ en_cours: 'info', terminee: 'success', annulee: 'danger' }[m.statut] || 'info');
+  const statutLabel = isAVenir ? '🗓 À venir' : ({ en_cours: 'En cours', terminee: 'Terminée', annulee: 'Annulée' }[m.statut] || m.statut);
+  const specialite = SPECIALITES.find(s => s.code === m.specialite);
+
+  return `
+    <div class="mission-detail">
+      <div class="detail-badges">
+        <span class="badge badge-${statutClass}">${statutLabel}</span>
+        <span class="badge badge-info">${escHtml(typeLabel(m.type))}</span>
+        ${m.distanciel ? '<span class="badge badge-info">🖥 Distanciel</span>' : ''}
+        ${facture ? `<span class="badge badge-${facture.statut === 'payee' ? 'success' : 'warning'}">${facture.statut === 'payee' ? '✓ Facture payée' : '⏳ Facturée'}</span>` : ''}
+      </div>
+
+      <div class="detail-section">
+        <h4>Informations générales</h4>
+        <div class="detail-grid">
+          ${org ? `<div class="detail-row"><span class="detail-label">Organisme</span><span>${escHtml(org.nom)}</span></div>` : ''}
+          ${entreprises.length ? `<div class="detail-row"><span class="detail-label">Entreprise(s) formée(s)</span><span>${entreprises.map(e => escHtml(e.nom)).join(', ')}</span></div>` : ''}
+          <div class="detail-row"><span class="detail-label">Participants</span><span>${m.participants || 0}</span></div>
+          ${specialite ? `<div class="detail-row"><span class="detail-label">Spécialité (BPF)</span><span>${specialite.code} — ${escHtml(specialite.label)}</span></div>` : ''}
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h4>Sessions — ${sessions.length} jour(s) · ${heures}h</h4>
+        <div class="detail-sessions">
+          ${sessions.map(s => `
+            <div class="detail-session-row">
+              <span>${formatDate(s.date)}</span>
+              <span>${s.heures}h</span>
+              ${s.distanciel ? '<span class="badge badge-info" style="font-size:0.68rem">distanciel</span>' : '<span></span>'}
+            </div>`).join('')}
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h4>Financier</h4>
+        <div class="detail-grid">
+          <div class="detail-row"><span class="detail-label">Tarif journalier</span><span>${formatCurrency(m.tarif_journalier || 0)}</span></div>
+          ${m.frais_deplacement ? `<div class="detail-row"><span class="detail-label">Frais de déplacement</span><span>${formatCurrency(m.frais_deplacement)}</span></div>` : ''}
+          <div class="detail-row detail-row-total"><span class="detail-label">Total HT</span><span>${formatCurrency(total)}</span></div>
+        </div>
+      </div>
+
+      ${m.notes ? `
+      <div class="detail-section">
+        <h4>Notes internes</h4>
+        <p class="detail-notes">${escHtml(m.notes)}</p>
+      </div>` : ''}
+
+      <div class="detail-section">
+        <h4>Document</h4>
+        ${m.contrat
+          ? `<div class="contrat-attached">
+              <div class="contrat-icon">📄</div>
+              <div class="contrat-info">
+                <div class="contrat-filename">${escHtml(m.contrat.filename)}</div>
+                ${m.contrat.uploaded_at ? `<div class="contrat-meta">Ajouté le ${formatDate(m.contrat.uploaded_at.split('T')[0])}</div>` : ''}
+              </div>
+              <a href="${m.contrat.web_view_link}" target="_blank" rel="noopener" class="btn-secondary btn-sm">👁 Consulter</a>
+            </div>`
+          : '<p class="empty-state" style="margin:0">Aucun contrat attaché à cette mission</p>'}
+      </div>
+
+      <div class="form-actions">
+        <button type="button" class="btn-secondary" id="btn-detail-close">Fermer</button>
+        <button type="button" class="btn-primary" id="btn-detail-edit" data-id="${m.id}">✏️ Modifier</button>
+      </div>
+    </div>`;
+}
+
+function openMissionDetail(id) {
+  const m = store.missions.find(x => x.id === id);
+  if (!m) return;
+  showModal(m.intitule || 'Détail de la mission', missionDetailHTML(m), 'modal-large');
+  document.getElementById('btn-detail-close')?.addEventListener('click', closeModal);
+  document.getElementById('btn-detail-edit')?.addEventListener('click', () => openMissionForm(id));
 }
 
 function isAnimation(type) {
