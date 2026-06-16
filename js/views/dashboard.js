@@ -83,7 +83,7 @@ export function render() {
         <div class="hero-video">
           <iframe
             src="https://www.youtube-nocookie.com/embed/L6e7oIqgOiA?rel=0&modestbranding=1&origin=https://avrila.fr"
-            title="AVRILA GESTION — Présentation"
+            title="NABHOO — Présentation"
             frameborder="0"
             allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
             allowfullscreen
@@ -91,7 +91,7 @@ export function render() {
           </iframe>
         </div>
         <div class="hero-promo glass-card">
-          <img src="assets/hero-promo.png" alt="AVRILA GESTION" class="hero-promo-img"
+          <img src="assets/hero-promo.png" alt="NABHOO" class="hero-promo-img"
             onerror="this.closest('.hero-promo').classList.add('hero-promo-fallback');this.style.display='none'">
           <div class="hero-promo-text" style="display:none">
             <p class="hero-tagline-top">LA GESTION SIMPLIFIÉE,</p>

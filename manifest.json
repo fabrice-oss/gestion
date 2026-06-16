@@ -1,6 +1,6 @@
 {
-  "name": "AVRILA GESTION",
-  "short_name": "AVRILA",
+  "name": "NABHOO",
+  "short_name": "NABHOO",
   "description": "Gestion de votre activité de formation professionnelle",
   "start_url": "/gestion/",
   "scope": "/gestion/",

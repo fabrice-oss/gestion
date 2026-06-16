@@ -54,7 +54,7 @@ export async function generateInvoicePDF(facture, mission) {
   // ══════════════════════════════════════════════════════════════════════════
   const logoContent = logo
     ? { image: logo, width: 65, margin: [0, 0, 0, 0] }
-    : { text: s.nom_commercial || 'AVRILA FORMATION', fontSize: 13, bold: true, color: navy };
+    : { text: s.nom_commercial || 'NABHOO', fontSize: 13, bold: true, color: navy };
 
   const headerBand = {
     table: {
@@ -111,7 +111,7 @@ export async function generateInvoicePDF(facture, mission) {
   // ══════════════════════════════════════════════════════════════════════════
   const emetteurLines = [
     { text: 'EMETTEUR', fontSize: 7, bold: true, color: orange, characterSpacing: 1.2, margin: [10, 8, 10, 5] },
-    { text: s.nom_commercial || 'AVRILA FORMATION', bold: true, fontSize: 10.5, color: navy, margin: [10, 0, 10, 2] },
+    { text: s.nom_commercial || 'NABHOO', bold: true, fontSize: 10.5, color: navy, margin: [10, 0, 10, 2] },
     ...[
       s.dirigeant          ? { text: s.dirigeant,                                   fontSize: 8, color: darkText, margin: [10, 0, 10, 0] } : null,
       s.adresse            ? { text: s.adresse,                                     fontSize: 8, color: darkText, margin: [10, 0, 10, 0] } : null,
@@ -306,7 +306,7 @@ export async function generateInvoicePDF(facture, mission) {
       stack: [
         { canvas: [{ type: 'line', x1: 45, y1: 0, x2: 550, y2: 0, lineWidth: 0.5, lineColor: '#DDE2EE' }] },
         {
-          text: `${s.nom_commercial || 'AVRILA FORMATION'} — SIRET : ${s.siret || ''} — NDA : ${s.nda || ''} — Conditions generales de vente disponibles sur le site de l'organisme.`,
+          text: `${s.nom_commercial || 'NABHOO'} — SIRET : ${s.siret || ''} — NDA : ${s.nda || ''} — Conditions generales de vente disponibles sur le site de l'organisme.`,
           alignment: 'center', fontSize: 7, color: mutedText, margin: [45, 6, 45, 0],
         },
       ],
