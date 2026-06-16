@@ -2,6 +2,16 @@ import { store, saveMissions, getOrganisme, getMissionEntreprises, getMissionFac
 import { uuid, toast, escHtml, confirm, formatDate, formatCurrency, missionTotalHT, missionHeuresFormateur, isoToday } from '../utils.js';
 import { showModal, closeModal, navigate } from '../app.js';
 import { createEvent } from '../api/calendar.js';
+import { uploadContrat, deleteDriveFile } from '../api/drive.js';
+
+const CONTRAT_MAX_SIZE = 10 * 1024 * 1024; // 10 Mo
+const CONTRAT_ALLOWED_TYPES = [
+  'application/pdf',
+  'image/jpeg',
+  'image/png',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+];
 
 const MISSION_TYPES = [
   { value: 'animation',         label: 'Animation de formation' },
@@ -108,6 +118,7 @@ function renderMissionsList(filter) {
             <div class="meta-item"><span>👥</span> ${m.participants || 0} participant(s)</div>
             <div class="meta-item"><span>⏱</span> ${heures}h · ${sessions.length} jour(s)${m.distanciel ? ' · <span style="color:var(--orange)">🖥 distanciel</span>' : ''}</div>
             ${firstDate ? `<div class="meta-item"><span>📅</span> ${formatDate(firstDate)}${lastDate !== firstDate ? ` → ${formatDate(lastDate)}` : ''}</div>` : ''}
+            ${m.contrat ? `<a href="${m.contrat.web_view_link}" target="_blank" rel="noopener" class="meta-item meta-link">📎 ${escHtml(m.contrat.filename)}</a>` : ''}
           </div>
           <div class="mission-footer">
             <div class="mission-total">${formatCurrency(total)}</div>
@@ -251,6 +262,11 @@ function missionFormHTML(m = {}) {
         <button type="button" class="btn-secondary" id="btn-add-session">+ Ajouter une session</button>
       </div>
 
+      <div class="form-section-title">Contrat signé</div>
+      <div class="form-group-full" id="contrat-zone-wrap">
+        ${contratZoneHTML(m.contrat)}
+      </div>
+
       <div class="form-group form-group-full">
         <label>Notes internes</label>
         <textarea name="notes" rows="3">${escHtml(m.notes || '')}</textarea>
@@ -285,14 +301,42 @@ function sessionRow(s, i) {
     </div>`;
 }
 
+function contratZoneHTML(contrat) {
+  if (contrat) {
+    const dateLabel = contrat.uploaded_at ? formatDate(contrat.uploaded_at.split('T')[0]) : '';
+    return `
+      <div class="contrat-attached">
+        <div class="contrat-icon">📄</div>
+        <div class="contrat-info">
+          <div class="contrat-filename">${escHtml(contrat.filename)}</div>
+          ${dateLabel ? `<div class="contrat-meta">Ajouté le ${dateLabel}</div>` : ''}
+        </div>
+        <div class="contrat-actions">
+          <a href="${contrat.web_view_link}" target="_blank" rel="noopener" class="btn-secondary btn-sm">👁 Consulter</a>
+          <button type="button" class="btn-icon" id="btn-remove-contrat" title="Supprimer">🗑️</button>
+        </div>
+      </div>`;
+  }
+  return `
+    <div class="contrat-dropzone" id="contrat-dropzone">
+      <input type="file" id="contrat-file-input" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" hidden>
+      <div class="dropzone-icon">📎</div>
+      <p>Glissez-déposez le contrat signé ici</p>
+      <p class="dropzone-sub">ou <span class="dropzone-link">cliquez pour parcourir</span> — PDF, image ou Word, 10 Mo max</p>
+    </div>`;
+}
+
 let sessionCount = 1;
+let currentContrat = null;
 
 function openMissionForm(id = null) {
   const m = id ? store.missions.find(x => x.id === id) : null;
   sessionCount = m?.sessions?.length || 1;
+  currentContrat = m?.contrat || null;
   showModal(id ? 'Modifier la mission' : 'Nouvelle mission', missionFormHTML(m || {}), 'modal-large');
 
   document.getElementById('btn-cancel')?.addEventListener('click', closeModal);
+  bindContratZoneEvents();
 
   // Afficher/masquer les champs selon le type de prestation
   document.getElementById('select-type')?.addEventListener('change', e => {
@@ -329,6 +373,76 @@ function attachRemoveSession() {
       else toast('Une mission doit avoir au moins une session', 'error');
     };
   });
+}
+
+function bindContratZoneEvents() {
+  const dropzone = document.getElementById('contrat-dropzone');
+  if (dropzone) {
+    const input = document.getElementById('contrat-file-input');
+    dropzone.addEventListener('click', () => input.click());
+    input.addEventListener('change', () => {
+      if (input.files[0]) handleContratFile(input.files[0]);
+    });
+    dropzone.addEventListener('dragover', e => {
+      e.preventDefault();
+      dropzone.classList.add('dragover');
+    });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+    dropzone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file) handleContratFile(file);
+    });
+  }
+
+  document.getElementById('btn-remove-contrat')?.addEventListener('click', async () => {
+    const ok = await confirm('Supprimer le contrat attaché à cette mission ?');
+    if (!ok) return;
+    if (currentContrat?.drive_id) {
+      try { await deleteDriveFile(currentContrat.drive_id); } catch (e) { console.warn('Suppression Drive échouée:', e); }
+    }
+    currentContrat = null;
+    refreshContratZone();
+    toast('Contrat supprimé');
+  });
+}
+
+function refreshContratZone() {
+  const wrap = document.getElementById('contrat-zone-wrap');
+  if (!wrap) return;
+  wrap.innerHTML = contratZoneHTML(currentContrat);
+  bindContratZoneEvents();
+}
+
+async function handleContratFile(file) {
+  if (file.size > CONTRAT_MAX_SIZE) {
+    toast('Fichier trop volumineux (10 Mo max)', 'error');
+    return;
+  }
+  if (!CONTRAT_ALLOWED_TYPES.includes(file.type)) {
+    toast('Format non supporté — utilisez un PDF, une image ou un document Word', 'error');
+    return;
+  }
+
+  const wrap = document.getElementById('contrat-zone-wrap');
+  wrap.innerHTML = `<div class="contrat-dropzone contrat-uploading"><div class="loading-spinner"></div><p>Envoi du contrat…</p></div>`;
+
+  try {
+    const result = await uploadContrat(file.name, file, file.type);
+    currentContrat = {
+      drive_id: result.id,
+      filename: file.name,
+      web_view_link: result.webViewLink,
+      mime_type: file.type,
+      uploaded_at: new Date().toISOString(),
+    };
+    toast('Contrat ajouté ✓');
+  } catch (e) {
+    console.error('Upload contrat échoué:', e);
+    toast('Erreur lors de l\'envoi du contrat', 'error');
+  }
+  refreshContratZone();
 }
 
 async function saveMissionForm(form, id) {
@@ -370,6 +484,7 @@ async function saveMissionForm(form, id) {
     distanciel: sessions.some(s => s.distanciel),
     notes: fd.get('notes') || '',
     sessions,
+    contrat: currentContrat,
   };
 
   let savedMissionId;
@@ -432,6 +547,10 @@ async function deleteMission(id) {
   if (facture) { toast('Cette mission a une facture associée. Supprimez la facture d\'abord.', 'error'); return; }
   const ok = await confirm('Supprimer cette mission définitivement ?');
   if (!ok) return;
+  const mission = store.missions.find(m => m.id === id);
+  if (mission?.contrat?.drive_id) {
+    try { await deleteDriveFile(mission.contrat.drive_id); } catch (e) { console.warn('Suppression contrat Drive échouée:', e); }
+  }
   store.missions = store.missions.filter(m => m.id !== id);
   await saveMissions();
   toast('Mission supprimée');

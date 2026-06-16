@@ -3,6 +3,7 @@ import { getToken } from '../auth.js';
 const BASE = 'https://www.googleapis.com';
 let folderId = null;
 let facturesFolderId = null;
+let contratsFolderId = null;
 let fileIds = {};
 
 async function req(path, options = {}) {
@@ -41,6 +42,7 @@ async function createFolder(name, parentId = null) {
 export async function initDriveFolder(folderName) {
   folderId = await findFolder(folderName) || await createFolder(folderName);
   facturesFolderId = await findFolder('factures', folderId) || await createFolder('factures', folderId);
+  contratsFolderId = await findFolder('contrats', folderId) || await createFolder('contrats', folderId);
   const dataFolderId = await findFolder('data', folderId) || await createFolder('data', folderId);
   fileIds._dataFolder = dataFolderId;
   return folderId;
@@ -116,16 +118,16 @@ export async function saveJSON(name, data) {
   }
 }
 
-export async function uploadPDF(filename, pdfBlob) {
-  const meta = { name: filename, mimeType: 'application/pdf', parents: [facturesFolderId] };
-  const boundary = 'boundary_pdf_' + Date.now();
+async function uploadFile(filename, fileBlob, mimeType, parentId) {
+  const meta = { name: filename, mimeType, parents: [parentId] };
+  const boundary = 'boundary_upload_' + Date.now();
   const metaStr = JSON.stringify(meta);
 
-  const arrayBuffer = await pdfBlob.arrayBuffer();
+  const arrayBuffer = await fileBlob.arrayBuffer();
   const uint8 = new Uint8Array(arrayBuffer);
 
   const metaPart = `--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${metaStr}\r\n`;
-  const filePart = `--${boundary}\r\nContent-Type: application/pdf\r\n\r\n`;
+  const filePart = `--${boundary}\r\nContent-Type: ${mimeType}\r\n\r\n`;
   const ending = `\r\n--${boundary}--`;
 
   const metaBytes = new TextEncoder().encode(metaPart);
@@ -151,6 +153,14 @@ export async function uploadPDF(filename, pdfBlob) {
     body: combined,
   });
   return res.json();
+}
+
+export async function uploadPDF(filename, pdfBlob) {
+  return uploadFile(filename, pdfBlob, 'application/pdf', facturesFolderId);
+}
+
+export async function uploadContrat(filename, fileBlob, mimeType) {
+  return uploadFile(filename, fileBlob, mimeType, contratsFolderId);
 }
 
 export async function deleteDriveFile(fileId) {
