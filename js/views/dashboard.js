@@ -110,7 +110,7 @@ export function render() {
 
       <div class="stats-grid">
         <div class="stat-card glass-card">
-          <div class="stat-icon" style="background: linear-gradient(135deg,#1B3A8C,#2d5fce)">
+          <div class="stat-icon" style="background: linear-gradient(135deg,#5B5FEF,#7B7FF5)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
           </div>
           <div class="stat-content">
@@ -119,7 +119,7 @@ export function render() {
           </div>
         </div>
         <div class="stat-card glass-card">
-          <div class="stat-icon" style="background: linear-gradient(135deg,#e67e22,#F5A623)">
+          <div class="stat-icon" style="background: linear-gradient(135deg,#00A896,#00D4B8)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
           </div>
           <div class="stat-content">
@@ -138,7 +138,7 @@ export function render() {
           </div>
         </div>
         <div class="stat-card glass-card">
-          <div class="stat-icon" style="background: linear-gradient(135deg,#8e44ad,#9b59b6)">
+          <div class="stat-icon" style="background: linear-gradient(135deg,#3D2E8C,#7F77DD)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
           </div>
           <div class="stat-content">

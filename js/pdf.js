@@ -32,18 +32,18 @@ export async function generateInvoicePDF(facture, mission) {
   const org  = store.organismes.find(o => o.id === mission.organisme_id) || {};
   const logo = await getLogoDataUrl();
 
-  // ── Palette ────────────────────────────────────────────────────────────────
-  const navy      = '#1B3A8C';
-  const navyMid   = '#22469E';
-  const orange    = '#F5A623';
+  // ── Palette Tech Innovation ──────────────────────────────────────────────
+  const navy      = '#5B5FEF';
+  const navyMid   = '#6F73F5';
+  const orange    = '#00D4B8';
   const lightGrey = '#F4F6FB';
   const darkText  = '#1A2340';
   const mutedText = '#6B7280';
   const white     = '#FFFFFF';
   // Couleurs claires pour texte sur fond navy (hex pur — pdfmake n'accepte pas rgba)
   const onNavy    = '#FFFFFF';
-  const onNavySub = '#B8CCF0';
-  const onNavyMut = '#7A9ACA';
+  const onNavySub = '#C7C9FA';
+  const onNavyMut = '#9A9CE8';
 
   const lignes  = buildLignes(facture, mission);
   const totalHT = lignes.reduce((sum, l) => sum + l.total, 0);
