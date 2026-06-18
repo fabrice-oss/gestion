@@ -21,7 +21,7 @@ export function initAuth(callback) {
 // ─── Redirect flow (Safari iOS / iPadOS) ─────────────────────────────────────
 // Safari bloque les popups OAuth. On utilise le flux redirect natif.
 // PRÉREQUIS Google Cloud Console → URI de redirection autorisés :
-//   https://avrila.fr/gestion/
+//   https://avrila.fr/nabhoo/
 
 function signInWithRedirect() {
   const redirectUri = window.location.origin + window.location.pathname;
