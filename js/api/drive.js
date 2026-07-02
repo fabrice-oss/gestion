@@ -5,6 +5,7 @@ let folderId = null;
 let facturesFolderId = null;
 let contratsFolderId = null;
 let fichesFolderId = null;
+let organismesFolderId = null;
 let fileIds = {};
 
 async function req(path, options = {}) {
@@ -45,6 +46,7 @@ export async function initDriveFolder(folderName) {
   facturesFolderId = await findFolder('factures', folderId) || await createFolder('factures', folderId);
   contratsFolderId = await findFolder('contrats', folderId) || await createFolder('contrats', folderId);
   fichesFolderId = await findFolder('fiches', folderId) || await createFolder('fiches', folderId);
+  organismesFolderId = await findFolder('organismes', folderId) || await createFolder('organismes', folderId);
   const dataFolderId = await findFolder('data', folderId) || await createFolder('data', folderId);
   fileIds._dataFolder = dataFolderId;
   return folderId;
@@ -171,6 +173,10 @@ export async function uploadContrat(filename, fileBlob, mimeType) {
 
 export async function uploadFiche(filename, fileBlob, mimeType) {
   return uploadFile(filename, fileBlob, mimeType, fichesFolderId);
+}
+
+export async function uploadOrganismeDoc(filename, fileBlob, mimeType) {
+  return uploadFile(filename, fileBlob, mimeType, organismesFolderId);
 }
 
 export async function fetchDriveBlob(driveId) {
